@@ -16,12 +16,10 @@
 #include <Servo.h>
 #include <Oscillator.h>
 #include <EEPROM.h>
-#include <mySoftwareSerial.h>  // We need this even if we're not using a SoftwareSerial object
-                              // Due to the way the Arduino IDE compiles
-#include <SerialCommand.h>
+#include <ZowiSerialCommand.h>
 #include <EnableInterrupt.h> //Library to manage external interruptions
 
-SerialCommand SCmd;  // The demo SerialCommand object
+ZowiSerialCommand SCmd;  // The demo SerialCommand object
 
 
 //-- Zowi Library
