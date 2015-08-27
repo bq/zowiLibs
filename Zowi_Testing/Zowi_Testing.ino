@@ -20,6 +20,7 @@
 #include <ZowiSerialCommand.h>
 #include <EnableInterrupt.h> //Library to manage external interruptions
 
+
 ZowiSerialCommand SCmd;  // The demo SerialCommand object
 
 //-- Zowi Library
@@ -28,6 +29,9 @@ ZowiSerialCommand SCmd;  // The demo SerialCommand object
 //---Zowi Led Array
 #include <LedMatrix.h>
 #include <Zowi_mouth.h>
+
+//---Zowi Battery reader library
+#include <BatReader.h>
 
 LedMatrix ledmatrix(11, 13, 12);
 
@@ -713,17 +717,15 @@ void requestNoise()
 
 void requestBattery()
 {
-    //The first read of the batery is often a wrong reading, so we read it two times. 
-    int bateryLevel=(map(analogRead(A7),0,1023,0,500));
-    bateryLevel=map(bateryLevel,350,440,0,100);
-    bateryLevel=(map(analogRead(A7),0,1023,0,500));
-    bateryLevel=map(bateryLevel,350,440,0,100);
+       //The first read of the batery is often a wrong reading, so we read it two times. 
+    double bateryLevel= batery.readBatPercent();
+   bateryLevel= batery.readBatPercent();
 
     Serial.print("&&");
     Serial.print("B ");
     Serial.print(bateryLevel);
     Serial.println("%%");
-    delay(10);
+    Serial.flush();
 }
 
 void requestProgramId()
