@@ -20,20 +20,25 @@
 #include <ZowiSerialCommand.h>
 #include <EnableInterrupt.h> //Library to manage external interruptions
 
-
 ZowiSerialCommand SCmd;  // The demo SerialCommand object
 
 //-- Zowi Library
 #include <Zowi.h>
 
-//---Zowi Led Array
+Zowi zowi;  //-- This is Zowi!!
+
+//---Zowi Led Array Mouth
 #include <LedMatrix.h>
-#include <Zowi_mouth.h>
+#include <Zowi_mouths.h>
+
+LedMatrix ledmatrix(11, 13, 12);
+
 
 //---Zowi Battery reader library
 #include <BatReader.h>
 
-LedMatrix ledmatrix(11, 13, 12);
+BatReader battery;
+
 
 //-- First step: Configure the pins where the servos are attached
 /*
@@ -71,8 +76,7 @@ LedMatrix ledmatrix(11, 13, 12);
 #define TRIM_YR   -0
 #define TRIM_YL  3
 */
-//-- This is Zowi!!
-Zowi zowi;
+
 
 //bqBAT
 long TP_init(int trigger_pin, int echo_pin);
@@ -718,12 +722,12 @@ void requestNoise()
 void requestBattery()
 {
        //The first read of the batery is often a wrong reading, so we read it two times. 
-    double bateryLevel= batery.readBatPercent();
-   bateryLevel= batery.readBatPercent();
+    double batteryLevel= battery.readBatPercent();
+   batteryLevel= battery.readBatPercent();
 
     Serial.print("&&");
     Serial.print("B ");
-    Serial.print(bateryLevel);
+    Serial.print(batteryLevel);
     Serial.println("%%");
     Serial.flush();
 }
