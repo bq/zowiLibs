@@ -9,6 +9,7 @@
 //-- Authors:  Javier Isabel:  javier.isabel@bq.com
 //--           Juan Gonzalez (obijuan): juan.gonzalez@bq.com
 //--           Jose Alberca: jose.alberca@bq.com
+//--           Anita de Prado: ana.deprado@bq.com
 //-----------------------------------------------------------------
 //-- Experiment with all the features that Zowi have!
 //-----------------------------------------------------------------
@@ -20,7 +21,6 @@
 #include <EnableInterrupt.h> //Library to manage external interruptions
 
 ZowiSerialCommand SCmd;  // The demo SerialCommand object
-
 
 //-- Zowi Library
 #include <Zowi.h>
@@ -290,7 +290,17 @@ else if (state==4)  //ZowiPad mode
 }
 
 
+//-------------------------------------------
+//Uncomment this for a animation demo (animation name = littleUuh)
+// int time_anim = 200;
 
+// for(int veces=0;veces<3;veces++){
+//     for (int i=0;i<(sizeof(littleUuh)/sizeof(unsigned long int));i++)
+//     {
+//         ledmatrix.writeFull(littleUuh[i]);
+//         delay(time_anim);
+//     }
+// }
 
 
 //-------------------------------------------
