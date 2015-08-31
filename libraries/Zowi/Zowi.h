@@ -1,6 +1,11 @@
 #ifndef Zowi_h
 #define Zowi_h
 
+#include <US.h>
+#include <Zowi_mouths.h>
+#include <BatReader.h>
+#include <LedMatrix.h>
+
 #include <Servo.h>
 #include <Oscillator.h>
 #include <EEPROM.h>
@@ -16,9 +21,11 @@
 #define MEDIUM 15
 #define BIG 30
 
+
 class Zowi
 {
   public:
+    Zowi();
     void init(int YL, int YR, int RL, int RR, bool load_calibration=0);
     void setTrims(int YL, int YR, int RL, int RR);
     void saveTrimsOnEEPROM();
@@ -42,17 +49,34 @@ class Zowi
     void jitter(float steps, int T, int h);
     void ascendingTurn(float steps, int T, int h);
     
+    void printMouth(int mouthType);
+    void clearMouth();
+
+    int getDistance();
+    double getBattery();
  
   private:
   
     Oscillator servo[4];
+    LedMatrix mouth;
+    BatReader battery;
+    US usSensor;
+
+
     int servo_trim[4];
     int servo_position[4];
     unsigned long final_time;
     unsigned long partial_time;
     float increment[4];
+    unsigned long int mouthType[];
+    //**ANIMATIONS***
+    unsigned long int adivinawi[];
+    unsigned long int littleUuh[];
+    unsigned long int wave[];
+    unsigned long int zzzZ[];
+    unsigned long int dreamMouth[];
+    unsigned long int spiral[];  
 
-    
     void _execute(int A[4], int O[4], int T, double phase_diff[4], float steps);
 };
 
