@@ -1,7 +1,7 @@
 /******************************************************************************
 * Zowi Battery Reader Library
 * 
-* @version 20150824
+* @version 20150831
 * @author Raul de Pablos Martin
 *
 ******************************************************************************/
@@ -24,6 +24,8 @@ double BatReader::readBatVoltage(void) {
 }
 
 double BatReader::readBatPercent(void) {
-	return (SLOPE*readBatVoltage()) - OFFSET;
+	double value = (SLOPE*readBatVoltage()) - OFFSET;
+	if(value < 0) return 0;
+	else return value;
 }
 
