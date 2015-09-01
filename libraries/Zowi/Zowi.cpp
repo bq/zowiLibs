@@ -375,6 +375,9 @@ void Zowi::flapping(float steps, int T, int h, int dir)
 //------------------------------------------------------
 void Zowi::shakeLeg (int steps,int T,int dir){
 
+  //This variable change the amount of shakes
+  int numberLegMoves=2;
+
   //Parameters of all the movements. Default: Right leg
   int shake_leg1[4]={90, 90, 58, 35};   
   int shake_leg2[4]={90, 90, 58, 120};
@@ -394,23 +397,27 @@ void Zowi::shakeLeg (int steps,int T,int dir){
   
   //Time of the bend movement. Fixed parameter to avoid falls
   int T2=1000;    
-  //Time of one shake, constrained in order to avoid movements too fast or too slow.            
-  T=constrain(T, 150, 500);   
+  //Time of one shake, constrained in order to avoid movements too fast.            
+  T=T-T2;
+  T=max(T,200*numberLegMoves);  
 
+  for (int j=0; j<steps;j++)
+  {
   //Bend movement
   moveServos(T2/2,shake_leg1);
   moveServos(T2/2,shake_leg2);
   
-  //Shake movement
-  for (int i=0;i<steps;i++)
-  {
-  moveServos(T/2,shake_leg3);
-  moveServos(T/2,shake_leg2);
+    //Shake movement
+    for (int i=0;i<numberLegMoves;i++)
+    {
+    moveServos(T/(2*numberLegMoves),shake_leg3);
+    moveServos(T/(2*numberLegMoves),shake_leg2);
+    }
+    moveServos(500,homes);
   }
-  
   delay(T);
   //Return to home position
-  moveServos(500,homes);
+  
   
 }
 
@@ -444,7 +451,7 @@ void Zowi::bend (int steps, int T, int dir)
   for (int i=0;i<steps;i++)
   {
   moveServos(T/4,bend1);
-  moveServos(10,bend2);
+  moveServos(T/10,bend2);
   delay(3*T/4);
   moveServos(500,homes);
   }

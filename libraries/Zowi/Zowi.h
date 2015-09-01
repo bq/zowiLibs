@@ -35,19 +35,27 @@ class Zowi
     
     void home();
     void homeold();
-    void walk(float steps=4, int T=1800, int dir = FORWARD);
-    void turn(float steps=1, int T=2000, int dir = LEFT);
+
+    void jump(float steps=1, int T = 2000);
+
+    void walk(float steps=4, int T=1000, int dir = FORWARD);
+    void turn(float steps=4, int T=2000, int dir = LEFT);
+    void bend (int steps=1, int T=1400, int dir=LEFT);
+    void shakeLeg (int steps=1, int T = 2000, int dir=RIGHT);
+
     void updown(float steps=1, int T=1000, int h = 20);
-    void moonwalker(float steps, int T, int h, int dir);
-    void swing(float steps, int T, int h);
-    void tiptoeSwing(float steps, int T, int h);
-    void crusaito(float steps, int T, int h, int dir);
-    void flapping(float steps, int T, int h, int dir);
-    void jump(float steps=1, int T = 8000);
-    void shakeLeg (int steps=2,int T = 500,int dir=RIGHT);
-    void bend (int steps=1, int T=2000, int dir=LEFT);
-    void jitter(float steps, int T, int h);
-    void ascendingTurn(float steps, int T, int h);
+    void swing(float steps=1, int T=1000, int h=20);
+    void tiptoeSwing(float steps=1, int T=900, int h=20);
+    void jitter(float steps=1, int T=500, int h=20);
+    void ascendingTurn(float steps=1, int T=900, int h=20);
+
+    void moonwalker(float steps=1, int T=900, int h=20, int dir=LEFT);
+    void crusaito(float steps=1, int T=900, int h=20, int dir=FORWARD);
+    void flapping(float steps=1, int T=1000, int h=20, int dir=FORWARD);
+    
+    
+    
+
     
     void printMouth(int mouthType);
     void clearMouth();
