@@ -8,58 +8,6 @@
 
 #include "Zowi.h"
 #include <Oscillator.h>
-#include <LedMatrix.h>
-
-Zowi::Zowi(){
-   unsigned long int dummy []= {zero_code,one_code,two_code,three_code,four_code,five_code,six_code,seven_code,eight_code, nine_code,smile_code,happyOpenMouth_code,happyClosedMouth_code,heart_code,bigSurprise_code,smallSurprise_code,tongueOut_code, vamp1_code,vamp2_code,lineMouth_code,confused_code,diagonalMouth_code,sad_code,sadOpenMouth_code,sadOpenMouth_code, okMouth_code, xMouth_code,interrogation_code,thunder_code,culito_code};
-   for (int i = 0; i< (sizeof(dummy)/sizeof(*dummy)); i++){
-      Zowi::mouthType[i] = dummy[i];
-   }
-
-   Zowi::adivinawi[0]= 0b00100001000000000000000000100001;
-   Zowi::adivinawi[1]= 0b00010010100001000000100001010010;
-   Zowi::adivinawi[2]= 0b00001100010010100001010010001100;
-   Zowi::adivinawi[3]= 0b00000000001100010010001100000000;
-   Zowi::adivinawi[4]= 0b00000000000000001100000000000000;
-   Zowi::adivinawi[5]= 0b00000000000000000000000000000000;
-
-   Zowi::littleUuh[0]= 0b00000000000000001100001100000000;
-   Zowi::littleUuh[1]= 0b00000000000000000110000110000000;
-   Zowi::littleUuh[2]= 0b00000000000000000011000011000000;
-   Zowi::littleUuh[3]= 0b00000000001100010010001100000000;
-   Zowi::littleUuh[4]= 0b00000000000000000110000110000000;
-   Zowi::littleUuh[5]= 0b00000000000000001100001100000000;
-   Zowi::littleUuh[6]= 0b00000000000000011000011000000000;
-   Zowi::littleUuh[7]= 0b00000000000000110000110000000000;
-   Zowi::littleUuh[8]= 0b00000000000000011000011000000000;
-
-   Zowi::wave[0]= 0b00001100010010100001000000000000;
-   Zowi::wave[1]= 0b00000110001001010000100000000000;
-   Zowi::wave[2]= 0b00000011000100001000010000100000;
-   Zowi::wave[3]= 0b00000001000010000100001000110000;
-   Zowi::wave[4]= 0b00000000000001000010100100011000;
-   Zowi::wave[5]= 0b00000000000000100001010010001100;
-   Zowi::wave[6]= 0b00000000100000010000001001000110;
-   Zowi::wave[7]= 0b00100000010000001000000100000011;
-   Zowi::wave[8]= 0b00110000001000000100000010000001;
-   Zowi::wave[9]= 0b00011000100100000010000001000000;
-
-   Zowi::zzzZ[0]= 0b00011111000010000100001000011111;
-   Zowi::zzzZ[1]= 0b00000000001111000010000100001111;
-   Zowi::zzzZ[2]= 0b00000000000000000111000010000111;
-   Zowi::zzzZ[3]= 0b00000000000000000000000011000011;
-    
-   Zowi::dreamMouth[0]= 0b00000000000000000000110000110000;
-   Zowi::dreamMouth[1]= 0b00000000000000010000101000010000;
-   Zowi::dreamMouth[2]= 0b00000000011000100100100100011000;
-   Zowi::dreamMouth[3]= 0b00000000000000010000101000010000;
-
-   Zowi::spiral[0]= 0b00111110100000101110100010111110;
-   Zowi::spiral[1]= 0b00101110101010101010100010111110;
-   Zowi::spiral[2]= 0b00111110100010111010000010111110;
-   Zowi::spiral[3]= 0b00111110100010101010101010111010;
-
-}
 
 
 void Zowi::init(int YL, int YR, int RL, int RR, bool load_calibration) {
@@ -92,7 +40,7 @@ void Zowi::saveTrimsOnEEPROM() {
 
 void Zowi::moveServos(int time, int  servo_target[]) {
   if(time>10){
-    for (int i = 0; i < 4; i++)	increment[i] = ((servo_target[i]) - servo_position[i]) / (time / 10.0);
+    for (int i = 0; i < 4; i++) increment[i] = ((servo_target[i]) - servo_position[i]) / (time / 10.0);
     final_time =  millis() + time;
 
     for (int iteration = 1; millis() < final_time; iteration++) {
@@ -506,22 +454,4 @@ void Zowi::ascendingTurn(float steps, int T, int h)
   
   //-- Let's oscillate the servos!
   _execute(A, O, T, phase_diff, steps); 
-}
-
-
-
-void Zowi::printMouth(int shape){
-    Zowi::mouth.writeFull(mouthType[shape]);
-}
-
-void Zowi::clearMouth(){
-    Zowi::mouth.clearMatrix();
-}
-
-double Zowi::getBattery(){
-  return Zowi::battery.readBatPercent();
-}
-
-int Zowi::getDistance(){
-  return Zowi::usSensor.read();
 }

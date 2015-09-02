@@ -115,9 +115,17 @@
 
 
                
+void ZowiTone (int speakerPin, float noteFrequency, long noteDuration, int silentDuration)
+{
 
+      tone(speakerPin,noteFrequency,noteDuration);
+      delayMicroseconds(noteDuration*1000);       //milliseconds to microseconds
+      //noTone(speakerPin);
+      delayMicroseconds(silentDuration*1000);     //milliseconds to microseconds
 
-void ZowiTone(int speakerPin, float noteFrequency, long noteDuration, long silentDuration)
+} 
+
+void ZowiTone_OLD(int speakerPin, float noteFrequency, long noteDuration, long silentDuration)
 {    
   int x;
   // Convert the frequency to microseconds
@@ -152,16 +160,7 @@ void ZowiMelody(float melodyNotes[], int melodySize){
 //    ZowiMelody(connectionNotes, sssize);
 
 
-//TONEEEEEEEEEEEE
-void ZowiTone2 (int speakerPin, float noteFrequency, long noteDuration, int timeee)
-{
-
-      tone(speakerPin,noteFrequency,noteDuration);//MI
-      delay(noteDuration);
-      noTone(speakerPin);
-      delay(timeee);
-
-}  
+ 
 
 
 //-- MELODIES VECTORS

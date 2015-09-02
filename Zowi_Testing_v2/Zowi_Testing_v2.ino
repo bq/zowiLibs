@@ -1,7 +1,4 @@
 
-
-
-
 //----------------------------------------------------------------
 //-- Zowi: Testing the complete pack
 //-- (c) BQ. Released under a GPL licencse
@@ -23,19 +20,29 @@
 ZowiSerialCommand SCmd;  // The demo SerialCommand object
 
 //-- Zowi Library
-#include <BatReader.h>
-#include <LedMatrix.h>
-#include <US.h>
 #include <Zowi.h>
 
 Zowi zowi;  //-- This is Zowi!!
+
+//---Zowi Led Array Mouth
+#include <LedMatrix.h>
+#include <Zowi_mouths.h>
+
+LedMatrix ledmatrix(11, 13, 12);
+
+//---Zowi Sounds
+#include <Zowi_sounds.h>
+
+
+//---Zowi Battery reader library
+#include <BatReader.h>
+BatReader battery;
 
 
 
 
 //-- First step: Configure the pins where the servos are attached
 /*
-
          --------------- 
         |               |
         |     O   O     |
@@ -47,28 +54,28 @@ Zowi zowi;  //-- This is Zowi!!
             ||     ||
  RR ==>   -----   ------  <== RL
           -----   ------
-
           */
 
-          #define PIN_RR 4
-          #define PIN_RL 5
-          #define PIN_YR 2
-          #define PIN_YL 3
+          #define PIN_YL 3 //servo[0]
+          #define PIN_YR 2 //servo[1]
+          #define PIN_RL 5 //servo[2]
+          #define PIN_RR 4 //servo[3]
+          
+          
+          
 
 //-- Second step:  Determine the Servo Trim values
-//EVT3
-// #define TRIM_RR   -2
-// #define TRIM_RL   -9
-// #define TRIM_YR   4
-// #define TRIM_YL  0
-
-
+/*
+//EVT3-1
+#define TRIM_RR   -2
+#define TRIM_RL   -9
+#define TRIM_YR   4
+#define TRIM_YL  0
+//EVT3-2 *
 #define TRIM_RR   8
 #define TRIM_RL   -22
 #define TRIM_YR   4
 #define TRIM_YL  6
-
-/*
 //EVT2-1
 #define TRIM_RR   -20
 #define TRIM_RL   -18
@@ -79,12 +86,16 @@ Zowi zowi;  //-- This is Zowi!!
 
 
 //bqBAT
+long TP_init(int trigger_pin, int echo_pin);
+long Distance(int trigger_pin, int echo_pin);
+#define PIN_TriggerBat 8
+#define PIN_EchoBat 9
 
 //Noise Sensor
 #define PIN_NoiseSensor A6
 
 //Buzzer
-#define PIN_Buzzer 10
+#define PIN_Buzzer0 10
 
 //Buttons
 #define PIN_SecondButton 6
@@ -101,9 +112,10 @@ int T=1000; //Initial duration of movement
 int moveId=0; //Number of movement
 int endmove=1; // 1= stop 0= moving
 int moveSize=15; //Many movements accept a moveSize parameter asociated with the height of that movement
-int surprised=0; //For US Test
 volatile int state=0; //State of zowi state machine
 volatile int buttonPushed=0; //Variable to remember when a button has been pushed
+volatile int buttonAPushed=0; //Variable to remember when A button has been pushed
+volatile int buttonBPushed=0; //Variable to remember when B button has been pushed
 unsigned long previousMillis=0;
 int sensorFeedbackOn=0; //Variable to activate the sensor comunication from Zowi to the App
 
@@ -118,7 +130,9 @@ void setup() {
   Serial.begin(115200);  
   
   //PinMode of the components
-  pinMode(PIN_Buzzer,OUTPUT);
+  pinMode(PIN_EchoBat, INPUT );
+  pinMode(PIN_TriggerBat, OUTPUT );
+  pinMode(PIN_Buzzer0,OUTPUT);
   pinMode(PIN_SecondButton,INPUT);
   pinMode(PIN_ThirdButton,INPUT);
   
@@ -135,8 +149,8 @@ void setup() {
   randomSeed (analogRead(PIN_NoiseSensor));
 
   //Interrumptions
-  enableInterrupt(PIN_SecondButton, secondButtonPushed, CHANGE);
-  enableInterrupt(PIN_ThirdButton, thirdButtonPushed, CHANGE);
+  enableInterrupt(PIN_SecondButton, secondButtonPushed, RISING);
+  enableInterrupt(PIN_ThirdButton, thirdButtonPushed, RISING);
 
   // Setup callbacks for SerialCommand commands 
   SCmd.addCommand("M", receiveMovement);  //  sendAck();
@@ -152,30 +166,20 @@ void setup() {
 
   //-- Zowi wake up!
   //A little moment of initial surprise
-  zowi.printMouth(bigSurprise);
+  zowi.home();
+
+  ledmatrix.writeFull(mouthType[bigSurprise]);
+  S_connection();
   zowi.jump(1,700);
 
   //Zowi's resting position
   zowi.home();
   
   //Big Smile for a happy Zowi
-  zowi.printMouth(happyOpenMouth);
+  ledmatrix.writeFull(mouthType[happyOpenMouth]);
+
 }
 
-
-
-///**PRUEBAS SONIDOOOOO
-int prueba_sonido=0;
-#define note_E6 1318.51  //E6
-#define note_E7 2637.02  //E7
-#define note_A7 3520  //A7
-
-//**MELODIES***
-float conexionNotes[]={
-    note_E6,50,30,
-    note_E7,50,30,
-    note_A7,50,30
-};
 
 
 ////////////////////////////
@@ -183,145 +187,164 @@ float conexionNotes[]={
 ////////////////////////////
 void loop() {
 
-      //pruebas sonidoooo
-      if(prueba_sonido==1){
-          
-          int sssize = (sizeof(conexionNotes)/sizeof(float));
-          ZowiMelody(conexionNotes,sssize);
-          delay(2000);
-
-          //desconexion();
-          delay(2000);
-
-          int x=3135;
-          for (int i=1760; i<33135; i=i*1.02) {                        
-              
-              x=x/1.02; 
-              ZowiTone(PIN_Buzzer,x,10,0);
-              ZowiTone(PIN_Buzzer,i,10,i/250);
-
-            }
-
-            delay(10000);
-      }
-
-
-
   //First attemp to initial software
   if (buttonPushed)
   {  
-    zowi.printMouth(state);
     zowi.home();
-    delay(500);
+    delay(500); //Wait for all buttons 
+
+    if(buttonAPushed==1 && buttonBPushed==0){ state=1;}
+    else if(buttonAPushed==0 && buttonBPushed==1){ state=2;}
+    else if(buttonAPushed==1 && buttonBPushed==1){ state=3;}
+
+    ledmatrix.writeFull(mouthType[state]);
+
+    delay(500); //Wait to show the state number 
+    ledmatrix.writeFull(mouthType[happyOpenMouth]);
+
     buttonPushed=0;
-    zowi.printMouth(happyOpenMouth);
+    buttonAPushed=0;
+    buttonBPushed=0;
+
+
+
   }
 
 
   if  (Serial.available()>0 && state!=4)
   {
     state=4;
-    zowi.printMouth(state);
+    ledmatrix.writeFull(mouthType[state]);
     zowi.home();
-    delay(500);
-    zowi.printMouth(happyOpenMouth);
+    delay(500); //Wait to show the state number 
+    ledmatrix.writeFull(mouthType[happyOpenMouth]);
   }
 
 
-  if(state==0) //Wait
-  {
-    zowi.printMouth(happyOpenMouth);
-    if (millis()-previousMillis>=8000)
-    {
-      zowi.printMouth(smallSurprise);
-      zowi.swing(2,800,20);    
-      previousMillis=millis();
-      zowi.home();
+  int randomDance=0;
+  int randomSteps=0;
+  //----------------------------------
+
+  switch (state) {
+
+
+      //MODE 0 - Zowi Wait
+      case 0:
+        ledmatrix.writeFull(mouthType[happyOpenMouth]);
       
-    }
-      if (zowi.getDistance()<=15)
-      {       
-        zowi.printMouth(bigSurprise);
-        zowi.jump(1, 500);
-
-        while(zowi.getDistance()<=15){
-          zowi.printMouth(heart);
-          zowi.crusaito(1,1000,20,1);
-          if(buttonPushed){break;}  
-        }
-
-        zowi.home();
-        
-      }
-  }
-
-  else if (state==1) //DANCE STATE!!
-  {
-    int randomDance=random(5,20);
-    int randomSteps=random(3,6);
-    zowi.printMouth(random(10,21));
-
-    for (int i=0;i<randomSteps;i++)
-    {
-      move(randomDance);
-      if(buttonPushed){break;}
-    }
-  }
-
-  else if (state==2) //Obstacle detector mode
-  {
-    zowi.walk(1,1000,1);
-    surprised=0;
-    zowi.printMouth(happyOpenMouth);
-
-    if (zowi.getDistance()<=15)
-    { 
-      zowi.printMouth(bigSurprise);
-      zowi.jump(5, 500);
-      
-      if(!buttonPushed)
-      {
-        zowi.printMouth(confused);
-        for(int i=0;i<3;i++)
+        if (millis()-previousMillis>=8000)
         {
-          zowi.walk(1,1000,-1);
-          if(buttonPushed){break;}
-        } 
-        for (int i=0;i<4;i++){
-          zowi.turn(1,1000,1);
+          ledmatrix.writeFull(mouthType[smallSurprise]);
+          zowi.swing(2,800,20);    
+          previousMillis=millis();
+          zowi.home();
+        }
+      
+        if (Distance(PIN_TriggerBat,PIN_EchoBat)<=15)
+        {       
+          ledmatrix.writeFull(mouthType[bigSurprise]);
+          zowi.jump(1, 500);
+
+          while(Distance(PIN_TriggerBat,PIN_EchoBat)<=15){
+            ledmatrix.writeFull(mouthType[heart]);
+            zowi.crusaito(1,1000,20,1);
+            if(buttonPushed){break;}  
+          }
+
+          zowi.home();
+        
+        }
+        break;
+      
+
+      //MODE 1 - DANCE STATE!!
+      case 1:
+        
+        randomDance=random(5,20);
+        randomSteps=random(3,6);
+        ledmatrix.writeFull(mouthType[random(10,21)]);
+
+        for (int i=0;i<randomSteps;i++)
+        {
+          move(randomDance);
           if(buttonPushed){break;}
         }
-      }
-      
-    }
-  } 
+        break;
 
-  else if (state==3)  //Noise sensor mode
-  {  
-    if (analogRead(PIN_NoiseSensor)>=740)
-    {
-      zowi.printMouth(bigSurprise);
-      delay(400);
-      
-      if(!buttonPushed){
-        zowi.printMouth(random(10,21));
-        move(random(1,20));
-        zowi.home();
-        delay(500);
-      }
-      zowi.printMouth(happyOpenMouth);
-    }
-   
+
+      //MODE 2 - Obstacle detector mode
+      case 2:
+
+        zowi.walk(1,1000,1);
+        ledmatrix.writeFull(mouthType[happyOpenMouth]);
+
+        if (Distance(PIN_TriggerBat,PIN_EchoBat)<=15)  //15cm
+        { 
+          ledmatrix.writeFull(mouthType[bigSurprise]);
+          S_surprise();
+          zowi.jump(5, 500);
+
+          if(!buttonPushed)
+          {
+            ledmatrix.writeFull(mouthType[confused]);
+            for(int i=0;i<3;i++)
+            {
+              if(buttonPushed){break;}
+              zowi.walk(1,1000,-1);
+            } 
+            for (int i=0;i<4;i++){
+              if(buttonPushed){break;}
+              zowi.turn(1,1000,1);
+            }
+          }
+        
+        }
+        break;
+
+
+      //MODE 3 - Noise sensor mode  
+      case 3:
+        if (analogRead(PIN_NoiseSensor)>=740)
+        {
+          
+          delay(50);  //Wait for the possible 'lag' of the button interruptions. 
+                      //Sometimes, the noise sensor detect the button before the interruption takes efect 
+          
+          if(!buttonPushed){
+
+            ledmatrix.writeFull(mouthType[bigSurprise]);
+            S_OhOoh();
+
+            ledmatrix.writeFull(mouthType[random(10,21)]);
+            move(random(1,20));
+            zowi.home();
+            delay(50); //Wait for possible noise of the servos while get home
+          }
+          
+          ledmatrix.writeFull(mouthType[happyOpenMouth]);
+        }
+        break;
+        
+
+      //MODE 3 - ZowiPad control  
+      case 4:
+
+        SCmd.readSerial();
+        if (endmove==0)
+        {
+          move(moveId);
+        }
+        break;
+        
+
+      default:
+          state=4;
+          break;
+        
   }
 
-  else if (state==4)  //ZowiPad mode
-  {
-    SCmd.readSerial();
-    if (endmove==0)
-    {
-      move(moveId);
-    }
-  }
+
+  
 
 
 //-------------------------------------------
@@ -331,10 +354,16 @@ void loop() {
 // for(int veces=0;veces<3;veces++){
 //     for (int i=0;i<(sizeof(littleUuh)/sizeof(unsigned long int));i++)
 //     {
-//         zowi.printMouth(littleUuh[i]);
+//         ledmatrix.writeFull(littleUuh[i]);
 //         delay(time_anim);
 //     }
 // }
+
+//-------------------------------------------
+//Uncomment this for example melody code:
+//    int sssize = (sizeof(connectionNotes)/sizeof(float));
+//    ZowiMelody(connectionNotes, sssize);
+
 
 
 //-------------------------------------------
@@ -347,7 +376,7 @@ delay(100);
 //-------------------------------------------
 //Uncomment this for a noise sensor demo with funny faces and movements 
 /*if (analogRead(PIN_NoiseSensor)>=740){
-    //zowi.printMouth(confused);
+    //ledmatrix.writeFull(mouth[confused]);
     randomMouth(random(1,16));
     move(random(1,14));
     //zowi.updown(1,300,15);
@@ -355,7 +384,7 @@ delay(100);
     delay(500);
 }
 else {
-    zowi.printMouth(smile);
+    ledmatrix.writeFull(mouth[smile]);
     
 }
 */
@@ -365,43 +394,42 @@ else {
 /*
 zowi.walk(1,1000,1);
 surprised=0;
-
-if (zowi.getDistance()<=15)
+if (Distance(PIN_TriggerBat,PIN_EchoBat)<=15)
 { 
   if(surprised==0)
   {
-    zowi.printMouth(bigSurprise);
+    ledmatrix.writeFull(mouth[bigSurprise]);
     //zowi.updown(1,500,15);
     zowi.jump(5, 500);
     surprised=1;
   }
-  zowi.printMouth(confused);
+  ledmatrix.writeFull(mouth[confused]);
   zowi.walk(3,1000,-1); 
   zowi.turn(8,1000,1);
   zowi.home(); 
-  zowi.printMouth(happyOpenMouth);
+  ledmatrix.writeFull(mouth[happyOpenMouth]);
 }
 */
 
 //-------------------------------------------
 //Uncomment this for a simple US test
 /*
-if (zowi.getDistance()<=15)
+if (Distance(PIN_TriggerBat,PIN_EchoBat)<=15)
 { 
   if(surprised==0)
   {
-    zowi.printMouth(bigSurprise);
+    ledmatrix.writeFull(mouth[bigSurprise]);
     //zowi.updown(1,500,15);
     zowi.jump(5, 500);
     surprised=1;
   }
-  zowi.printMouth(confused);
+  ledmatrix.writeFull(mouth[confused]);
   zowi.walk(1,1000,-1);  
 }
 else 
 {
   surprised=0;
-  zowi.printMouth(happyOpenMouth);
+  ledmatrix.writeFull(mouth[happyOpenMouth]);
   zowi.home();
 }
 */
@@ -409,20 +437,19 @@ else
 //-------------------------------------------
 //Uncomment this for a Robopad++ test
 /*char crec = 0;
-
   if(Serial.available() != 0) {
     crec = Serial.read();
     if(crec == 'U') {
-      zowi.printMouth(smile);
+      ledmatrix.writeFull(mouth[smile]);
       zowi.walk(1,T,1);
     } else if(crec == 'D') {
-      zowi.printMouth(sad);
+      ledmatrix.writeFull(mouth[sad]);
       zowi.walk(1,T,-1);
     } else if(crec == 'L') {
-      zowi.printMouth(confused);
+      ledmatrix.writeFull(mouth[confused]);
       zowi.turn(4,T,1);
     } else if(crec == 'R') {
-      zowi.printMouth(bigSurprise);
+      ledmatrix.writeFull(mouth[bigSurprise]);
       zowi.turn(4,T,-1);
     } else {zowi.home();}
     while(Serial.available() != 0) {
@@ -476,23 +503,25 @@ delay(1000);*/
 
 //Function executed when second button is pushed
 void secondButtonPushed(){  
-    if(state<4 && buttonPushed==0)
-    {
-      state++; 
+    // if(state<4 && buttonPushed==0)
+    // {
+    //   state++; 
            
-    }  
+    // }  
     buttonPushed=1;
-    zowi.printMouth(state);
+    buttonAPushed=1;
+    ledmatrix.writeFull(mouthType[smallSurprise]);  
 }
 
 //Function executed when third button is pushed
 void thirdButtonPushed(){ 
-    if(state>1 && buttonPushed==0)
-    {
-      state--;
-    }
+    // if(state>1 && buttonPushed==0)
+    // {
+    //   state--;
+    // }
     buttonPushed=1;
-    zowi.printMouth(state);
+    buttonBPushed=1;
+    ledmatrix.writeFull(mouthType[smallSurprise]);
 }
 
 
@@ -514,7 +543,7 @@ void receiveLED(){
   if (arg != NULL) 
   {
       matrix=strtoul(arg,&endstr,2);    // Converts a char string to an integer 
-      zowi.printMouth(matrix);
+      ledmatrix.writeFull(matrix);
   } 
 }
 
@@ -531,18 +560,18 @@ void receiveMovement(){
   if (arg != NULL) {moveId=atoi(arg);}
   else 
   {
-    zowi.printMouth(xMouth);
+    ledmatrix.writeFull(mouthType[xMouth]);
     delay(4000);
-    zowi.clearMouth();
+    ledmatrix.clearMatrix();
     moveId=0;
   }
   arg = SCmd.next(); 
   if (arg != NULL) {T=atoi(arg);}
   else 
   {
-    zowi.printMouth(xMouth);
+    ledmatrix.writeFull(mouthType[xMouth]);
     delay(4000);
-    zowi.clearMouth();
+    ledmatrix.clearMatrix();
     T=1000;
   }
   arg = SCmd.next(); 
@@ -560,9 +589,9 @@ void receiveMovement(){
     }
   else 
     {
-      zowi.printMouth(xMouth);
+      ledmatrix.writeFull(mouth[xMouth]);
       delay(4000);
-      zowi.clearMouth();
+      ledmatrix.clearMatrix();
     }
     */
     endmove=0;
@@ -660,9 +689,9 @@ void recieveBuzzer(){
     } 
   else 
     {
-      zowi.printMouth(xMouth);
+      ledmatrix.writeFull(mouthType[xMouth]);
       delay(4000);
-      zowi.clearMouth();
+      ledmatrix.clearMatrix();
     } 
   arg = SCmd.next(); 
   if (arg != NULL) 
@@ -671,23 +700,46 @@ void recieveBuzzer(){
     }
   else
     {
-      zowi.printMouth(xMouth);
+      ledmatrix.writeFull(mouthType[xMouth]);
       delay(4000);
-      zowi.clearMouth();
+      ledmatrix.clearMatrix();
     } 
 
-  ZowiTone(PIN_Buzzer, frec, duration, duration);   
-  // tone(PIN_Buzzer,frec,duration);
+  ZowiTone(PIN_Buzzer0, frec, duration, duration);   
+  // tone(PIN_Buzzer0,frec,duration);
   // delay(duration);
-  // noTone(PIN_Buzzer);
+  // noTone(PIN_Buzzer0);
 }
 
 
 
+//Ultrasound Sensor
+long TP_init(int trigger_pin, int echo_pin)
+   {
+    digitalWrite(trigger_pin, LOW);
+    delayMicroseconds(2);
+    digitalWrite(trigger_pin, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(trigger_pin, LOW);
+    long microseconds = pulseIn(echo_pin ,HIGH,100000);
+    return microseconds;
+}
+
+long Distance(int trigger_pin, int echo_pin)
+  {
+    long microseconds = TP_init(trigger_pin, echo_pin);
+    long distance;
+    distance = microseconds/29/2;
+    if (distance == 0){
+      distance = 999;
+    }
+    return distance;
+}
+
 
 void requestDistance()
 {
-    int distance=zowi.getDistance();
+    int distance=Distance(PIN_TriggerBat,PIN_EchoBat);
     Serial.print("&&");
     Serial.print("D ");
     Serial.print(distance);
@@ -708,7 +760,8 @@ void requestNoise()
 void requestBattery()
 {
        //The first read of the batery is often a wrong reading, so we read it two times. 
-    double batteryLevel= zowi.getBattery();
+    double batteryLevel= battery.readBatPercent();
+    batteryLevel= battery.readBatPercent();
 
     Serial.print("&&");
     Serial.print("B ");
@@ -735,58 +788,6 @@ void sendAck()
 }
 
 
-void ZowiTone(int speakerPin, float noteFrequency, long noteDuration, long silentDuration)
-{    
-  int x;
-  // Convert the frequency to microseconds
-  float microsecondsPerWave = 1000000/noteFrequency;
-  // Calculate how many HIGH/LOW cycles there are per millisecond
-  float millisecondsPerCycle = 1000/(microsecondsPerWave * 2);
-  // Multiply noteDuration * number or cycles per millisecond
-  float loopTime = noteDuration * millisecondsPerCycle;
-  // Play the note for the calculated loopTime.
-  for (x=0;x<loopTime;x++)   
-  {   
-              digitalWrite(speakerPin,HIGH); 
-              delayMicroseconds(microsecondsPerWave); 
-              digitalWrite(speakerPin,LOW); 
-              delayMicroseconds(microsecondsPerWave); 
-  }
-  delay(silentDuration); 
-}  
-
-
-
-
-//Pruebas sonidoo
-//---
-void ZowiMelody(float melodyNotes[], int melodySize){
-
-     for (int i=0;i<=melodySize;i=i+3) //por cada "fila"
-     {
-        ZowiTone(PIN_Buzzer, melodyNotes[i],melodyNotes[i+1],melodyNotes[i+2]);
-     }
-
-}
-
-void conexion (){
-          ZowiTone(PIN_Buzzer, note_E6,50,30);
-          ZowiTone(PIN_Buzzer, note_E7,50,30);
-          ZowiTone(PIN_Buzzer, note_A7,50,30);
-}
-
-void desconexion (){
-          ZowiTone(PIN_Buzzer, note_E6,50,30);
-          ZowiTone(PIN_Buzzer, note_A7,50,30);
-          ZowiTone(PIN_Buzzer, note_E7,50,30);
-}
-
-
-
-
-
-
-
 
 //Constant feedback of the sensors. F 1 = Feedback ON  F 0 = Feedback 0
 /*void sensorFeedback()
@@ -799,9 +800,9 @@ void desconexion (){
     } 
   else 
     {
-      zowi.printMouth(xMouth);
+      ledmatrix.writeFull(mouth[xMouth]);
       delay(4000);
-      zowi.clearMouth;
+      ledmatrix.clearMatrix();
     } 
 }
 */
@@ -873,8 +874,6 @@ void desconexion (){
 //       default: break;
 //     }
 // }
-
-
 
 
 
