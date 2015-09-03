@@ -119,9 +119,9 @@ void ZowiTone (int speakerPin, float noteFrequency, long noteDuration, int silen
 {
 
       tone(speakerPin,noteFrequency,noteDuration);
-      delayMicroseconds(noteDuration*1000);       //milliseconds to microseconds
+      delay(noteDuration);       //milliseconds to microseconds
       //noTone(speakerPin);
-      delayMicroseconds(silentDuration*1000);     //milliseconds to microseconds
+      delay(silentDuration);     
 
 } 
 
@@ -196,147 +196,25 @@ float fart_6_Notes[]={
 //--------------------------------------------------------
 void S_connection()
 {
+         ZowiTone(PIN_Buzzer, note_E5,50,30);
          ZowiTone(PIN_Buzzer, note_E6,50,30);
-         ZowiTone(PIN_Buzzer, note_E7,50,30);
-         ZowiTone(PIN_Buzzer, note_A7,50,30);
+         ZowiTone(PIN_Buzzer, note_A6,50,30);
 }
 
 void S_disconnection()
 {
+         ZowiTone(PIN_Buzzer, note_E5,50,30);
+         ZowiTone(PIN_Buzzer, note_A6,50,30);
          ZowiTone(PIN_Buzzer, note_E6,50,30);
-         ZowiTone(PIN_Buzzer, note_A7,50,30);
-         ZowiTone(PIN_Buzzer, note_E7,50,30);
 }
-
-
-void S_happy() 
-{
-		for (int i=2349; i<3698; i=i*1.05) {
-            ZowiTone(PIN_Buzzer,i,8,8);
-       }
-
-       for (int i=3698; i>2349; i=i/1.05) {
-            ZowiTone(PIN_Buzzer,i,15,8);
-       }
-
-        for (int i=3349; i<4978; i=i*1.05) {
-            ZowiTone(PIN_Buzzer,i,8,8);
-       }
-
-       for (int i=4978; i>3349; i=i/1.05) {
-            ZowiTone(PIN_Buzzer,i,15,8);
-       } 
-}	
-
-void S_superHappy()
-{
-	    for (int i=2000; i<6000; i=i*1.05) {
-          ZowiTone(PIN_Buzzer,i,8,0);
-        }
-        delay(50);
-        for (int i=6000; i>2000; i=i/1.05) {
-          ZowiTone(PIN_Buzzer,i,15,0);
-        }
-}
-
-void S_sad() 
-{          
-        ZowiTone(PIN_Buzzer, note_G6,20,0);
-        for (int i=1567; i<1768; i=i*1.02) {
-        	ZowiTone(PIN_Buzzer,i,15,0);
-        }
-        delay(10);
-        for (int i=1768; i>698; i=i/1.02) {
-        	ZowiTone(PIN_Buzzer,i,20,0);
-        }
-        ZowiTone(PIN_Buzzer, note_F5,70,0);
-        ZowiTone(PIN_Buzzer, note_E5,50,0);
-        ZowiTone(PIN_Buzzer, note_D5,30,0);
-}
-
-
-void S_confused() 
-{
-      
-      for (int i=2000; i<3500; i=i*1.02) {
-          ZowiTone(PIN_Buzzer,i,8,0);
-      } 
-
-      for (int i=3500; i>1000; i=i/1.02) {
-          ZowiTone(PIN_Buzzer,i,8,0);
-      }
-
-      for (int i=1000; i<4000; i=i*1.05) {
-          ZowiTone(PIN_Buzzer,i,8,10);
-      } 
-
-
-}  
-
-void S_question()
-{
-          ZowiTone(PIN_Buzzer, note_C6,100,100); //1046.5
-
-          for (int i=1046; i<1568; i=i*1.02) {  //1567.98  //G6
-            ZowiTone(PIN_Buzzer,i,12,0);
-          }  
-          delay(20);
-
-          ZowiTone(PIN_Buzzer, note_G6,100,50); //1567.98  //G6
-
-          for (int i=1568; i>1046; i=i/1.02) {  
-            ZowiTone(PIN_Buzzer,i,12,0);
-          }
-          delay(30);
-
-          for (int i=1046; i>784; i=i/1.02) {  //783.99  //G5
-            ZowiTone(PIN_Buzzer,i,12,0);
-          }
-          delay(20);
-
-
-          ZowiTone(PIN_Buzzer, note_G5,100,50); //783.99  //G5
-
-
-          for (int i=784; i<1567; i=i*1.02) { //G6
-                  ZowiTone(PIN_Buzzer,i,10,0);
-          } 
-
-}
-
-
-void S_lowAlarm()
-{
-		for (int i=2349; i<3520; i=i*1.02) {
-          	ZowiTone(PIN_Buzzer,i,12,0);
-        }
-        delay(30);
-        for (int i=2220; i<3720; i=i*1.02) {
-          	ZowiTone(PIN_Buzzer,i,10,0);
-        }
-}          
-
-
-void S_sleeping() //Ronquido
-{
-    for (int i=100; i<500; i=i*1.04) {
-            ZowiTone(PIN_Buzzer,i,10,10);
-        }
-        delay(500);
-
-        for (int i=400; i>100; i=i/1.04) {
-            ZowiTone(PIN_Buzzer,i,10,0);
-        }
-
-}  
 
 
 void S_surprise() 
 {          
-      for (int i=1800; i<3500; i=i*1.02) {
+      for (int i=800; i<2000; i=i*1.02) {
         ZowiTone(PIN_Buzzer,i,18,0);
       }
-      for (int i=3500; i>1800; i=i/1.02) {
+      for (int i=2000; i>800; i=i/1.02) {
         ZowiTone(PIN_Buzzer,i,13,0);
       }
 }
@@ -366,3 +244,130 @@ void S_OhOoh2()
           ZowiTone(PIN_Buzzer,note_C6,10,10);
       }
 } 
+
+void S_love() 
+{
+
+       for (int i=700; i<900; i=i*1.02) {
+            ZowiTone(PIN_Buzzer,i,20,4);
+       }
+      //delay(10);
+
+       for (int i=900; i>650; i=i/1.01) {
+            ZowiTone(PIN_Buzzer,i,20,4);
+       }
+
+} 
+
+void S_sleeping() //Ronquido
+{
+    for (int i=100; i<500; i=i*1.04) {
+            ZowiTone(PIN_Buzzer,i,10,10);
+        }
+        delay(500);
+
+        for (int i=400; i>100; i=i/1.04) {
+            ZowiTone(PIN_Buzzer,i,10,0);
+        }
+
+} 
+
+void S_happy() 
+{
+    for (int i=1500; i<2500; i=i*1.05) { 
+            ZowiTone(PIN_Buzzer,i,20,8);
+       }
+
+       for (int i=2500; i>1500; i=i/1.05) {
+            ZowiTone(PIN_Buzzer,i,25,8);
+       }
+
+       //  for (int i=2300; i<4000; i=i*1.05) {
+       //      ZowiTone(PIN_Buzzer,i,20,8);
+       // }
+
+       // for (int i=4000; i>2300; i=i/1.05) {
+       //      ZowiTone(PIN_Buzzer,i,25,8);
+       // } 
+}  
+
+void S_superHappy()
+{
+      for (int i=2000; i<6000; i=i*1.05) {
+          ZowiTone(PIN_Buzzer,i,8,2);
+        }
+        delay(50);
+        for (int i=6000; i>2000; i=i/1.05) {
+          ZowiTone(PIN_Buzzer,i,15,2);
+        }
+}
+
+void S_sad() 
+{          
+      for (int i=note_A5; i>note_E5; i=i/1.02) {
+        ZowiTone(PIN_Buzzer,i,20,0);
+        delay(250);
+      }
+}
+
+
+void S_confused() 
+{
+      
+      for (int i=1000; i<1700; i=i*1.02) {
+          ZowiTone(PIN_Buzzer,i,8,2);
+      } 
+
+      for (int i=1700; i>500; i=i/1.02) {
+          ZowiTone(PIN_Buzzer,i,8,2);
+      }
+
+      for (int i=1000; i<1700; i=i*1.05) {
+          ZowiTone(PIN_Buzzer,i,8,10);
+      } 
+
+
+}  
+
+void S_question()
+{
+          ZowiTone(PIN_Buzzer, note_C5,100,100); //1046.5 note_C6
+
+          for (int i=note_C5; i<note_G5; i=i*1.02) {  //C6 - G6
+            ZowiTone(PIN_Buzzer,i,12,0);
+          }  
+          delay(20);
+
+          ZowiTone(PIN_Buzzer, note_G5,100,50); //G6
+
+          for (int i=note_C5; i>note_C5; i=i/1.02) {  
+            ZowiTone(PIN_Buzzer,i,12,0);
+          }
+          delay(30);
+
+          for (int i=note_G5; i>note_G4; i=i/1.02) {  //G6 - G5
+            ZowiTone(PIN_Buzzer,i,12,0);
+          }
+          delay(20);
+
+
+          ZowiTone(PIN_Buzzer, note_G4,100,50); //G5
+
+
+          for (int i=note_G4; i<note_G5; i=i*1.02) { //G5 - G6
+                  ZowiTone(PIN_Buzzer,i,10,0);
+          } 
+
+}
+
+
+void S_fastAlarm()
+{
+    for (int i=1220; i<2720; i=i*1.04) {
+            ZowiTone(PIN_Buzzer,i,20,10);
+    }
+        delay(30);
+    for (int i=1220; i<4720; i=i*1.04) {
+            ZowiTone(PIN_Buzzer,i,10,10);
+    }
+}

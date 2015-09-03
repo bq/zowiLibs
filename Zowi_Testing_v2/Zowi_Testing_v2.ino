@@ -71,17 +71,19 @@ BatReader battery;
 #define TRIM_RL   -9
 #define TRIM_YR   4
 #define TRIM_YL  0
-//EVT3-2 *
-#define TRIM_RR   8
-#define TRIM_RL   -22
-#define TRIM_YR   4
-#define TRIM_YL  6
 //EVT2-1
 #define TRIM_RR   -20
 #define TRIM_RL   -18
 #define TRIM_YR   -0
 #define TRIM_YL  3
 */
+
+//EVT3-2 *
+#define TRIM_RR   8
+#define TRIM_RL   -22
+#define TRIM_YR   4
+#define TRIM_YL  6
+
 
 
 
@@ -168,15 +170,44 @@ void setup() {
   //A little moment of initial surprise
   zowi.home();
 
-  ledmatrix.writeFull(mouthType[bigSurprise]);
-  S_connection();
-  zowi.jump(1,700);
+  //ledmatrix.writeFull(mouthType[bigSurprise]);
+  S_connection(); 
 
-  //Zowi's resting position
-  zowi.home();
+
+  //animation uuuh
+  int time_anim = 150;
+  for (int i=0;i<(sizeof(littleUuh)/sizeof(unsigned long int));i++)
+  {
+      ledmatrix.writeFull(littleUuh[i]);
+      delay(time_anim);
+  }
+
+  for (int i=0;i<(sizeof(littleUuh)/sizeof(unsigned long int));i++)
+  {
+      ledmatrix.writeFull(littleUuh[i]);
+      delay(time_anim);
+  }
   
-  //Big Smile for a happy Zowi
-  ledmatrix.writeFull(mouthType[happyOpenMouth]);
+
+  //Smile for a happy Zowi
+  ledmatrix.writeFull(mouthType[smile]);
+  S_happy();
+
+  delay(500);
+  zowi.jump(1,700);
+  delay(200);
+  zowi.shakeLeg(1,T,1);
+  
+  delay(500);
+  ledmatrix.writeFull(mouthType[smallSurprise]);
+  zowi.swing(2,800,20);  
+
+    //Zowi's resting position
+  zowi.home();
+
+
+  previousMillis = millis();
+  
 
 }
 
@@ -195,18 +226,16 @@ void loop() {
 
     if(buttonAPushed==1 && buttonBPushed==0){ state=1;}
     else if(buttonAPushed==0 && buttonBPushed==1){ state=2;}
-    else if(buttonAPushed==1 && buttonBPushed==1){ state=3;}
+    else if(buttonAPushed==1 && buttonBPushed==1){ state=3;} //else
 
     ledmatrix.writeFull(mouthType[state]);
 
-    delay(500); //Wait to show the state number 
+    delay(800); //Wait to show the state number 
     ledmatrix.writeFull(mouthType[happyOpenMouth]);
 
     buttonPushed=0;
     buttonAPushed=0;
     buttonBPushed=0;
-
-
 
   }
 
@@ -234,25 +263,20 @@ void loop() {
       
         if (millis()-previousMillis>=8000)
         {
-          ledmatrix.writeFull(mouthType[smallSurprise]);
-          zowi.swing(2,800,20);    
-          previousMillis=millis();
-          zowi.home();
-        }
-      
-        if (Distance(PIN_TriggerBat,PIN_EchoBat)<=15)
-        {       
-          ledmatrix.writeFull(mouthType[bigSurprise]);
-          zowi.jump(1, 500);
+          //Zowi se duerme!!
+          for(int i=0; i<4;i++){
 
-          while(Distance(PIN_TriggerBat,PIN_EchoBat)<=15){
-            ledmatrix.writeFull(mouthType[heart]);
-            zowi.crusaito(1,1000,20,1);
+            ZowiDreaming();
             if(buttonPushed){break;}  
           }
-
+          
+          if(!buttonPushed){
+            ledmatrix.writeFull(mouthType[lineMouth]);
+            S_confused();
+            previousMillis=millis();
+          }
+          
           zowi.home();
-        
         }
         break;
       
@@ -260,8 +284,14 @@ void loop() {
       //MODE 1 - DANCE STATE!!
       case 1:
         
-        randomDance=random(5,20);
-        randomSteps=random(3,6);
+        randomDance=random(5,21); //5,20
+        if((randomDance>14)&&(randomDance<19)){
+              randomSteps=1;
+        }
+        else{
+              randomSteps=random(3,6);  //3,5
+        }
+        
         ledmatrix.writeFull(mouthType[random(10,21)]);
 
         for (int i=0;i<randomSteps;i++)
@@ -342,7 +372,6 @@ void loop() {
           break;
         
   }
-
 
   
 
@@ -658,10 +687,10 @@ void move(int moveId){
         zowi.bend(1,T,-1);
         break;
       case 17: //M 17 500 
-        zowi.shakeLeg(4,T,1);
+        zowi.shakeLeg(1,T,1);
         break;
       case 18: //M 18 500 
-        zowi.shakeLeg(4,T,1);
+        zowi.shakeLeg(1,T,1);
         break;
       case 19: //M 19 500 20
         zowi.jitter(1,T,moveSize);
@@ -787,6 +816,39 @@ void sendAck()
     Serial.flush();
 }
 
+
+void ZowiDreaming(){
+
+  ledmatrix.writeFull(dreamMouth[0]);
+  for (int i=100; i<200; i=i*1.04) {
+        ZowiTone(PIN_Buzzer,i,10,10);
+  }
+  
+  ledmatrix.writeFull(dreamMouth[1]);
+  for (int i=200; i<300; i=i*1.04) {
+        ZowiTone(PIN_Buzzer,i,10,10);
+  }
+
+  ledmatrix.writeFull(dreamMouth[2]);
+  for (int i=300; i<500; i=i*1.04) {
+        ZowiTone(PIN_Buzzer,i,10,10);
+  }
+
+  delay(500);
+  
+  ledmatrix.writeFull(dreamMouth[1]);
+  for (int i=400; i>250; i=i/1.04) {
+        ZowiTone(PIN_Buzzer,i,10,0);
+  }
+
+
+  ledmatrix.writeFull(dreamMouth[0]);
+  for (int i=250; i>100; i=i/1.04) {
+        ZowiTone(PIN_Buzzer,i,10,0);
+  }
+
+  delay(500);
+}
 
 
 //Constant feedback of the sensors. F 1 = Feedback ON  F 0 = Feedback 0
