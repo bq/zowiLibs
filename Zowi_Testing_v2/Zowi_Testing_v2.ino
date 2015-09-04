@@ -198,12 +198,13 @@ void setup() {
   delay(200);
   zowi.shakeLeg(1,T,1);
   
-  delay(300);
+  delay(200);
   ledmatrix.writeFull(mouthType[smallSurprise]);
   zowi.swing(2,800,20);  
 
     //Zowi's resting position
   zowi.home();
+  ledmatrix.writeFull(mouthType[happyOpenMouth]);
 
 
   previousMillis = millis();
@@ -221,12 +222,17 @@ void loop() {
   //First attemp to initial software
   if (buttonPushed)
   {  
-    zowi.home();
-    delay(500); //Wait for all buttons 
 
-    if(buttonAPushed==1 && buttonBPushed==0){ state=1;}
-    else if(buttonAPushed==0 && buttonBPushed==1){ state=2;}
-    else if(buttonAPushed==1 && buttonBPushed==1){ state=3;} //else
+    
+    zowi.home();
+
+    delay(100); //Wait for all buttons 
+    S_buttonPushed();
+    delay(200); //Wait for all buttons 
+
+    if(buttonAPushed==1 && buttonBPushed==0){      state=1; S_mode1();}
+    else if(buttonAPushed==0 && buttonBPushed==1){ state=2; S_mode2();}
+    else if(buttonAPushed==1 && buttonBPushed==1){ state=3; S_mode3();} //else
 
     ledmatrix.writeFull(mouthType[state]);
 
@@ -259,7 +265,7 @@ void loop() {
 
       //MODE 0 - Zowi Wait
       case 0:
-        ledmatrix.writeFull(mouthType[happyOpenMouth]);
+        
       
         if (millis()-previousMillis>=8000)
         {
@@ -277,6 +283,8 @@ void loop() {
           }
           
           zowi.home();
+          if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpenMouth]);} 
+          
         }
         break;
       
@@ -308,7 +316,6 @@ void loop() {
       case 2:
 
         zowi.walk(1,1000,1);
-        ledmatrix.writeFull(mouthType[happyOpenMouth]);
 
         if (Distance(PIN_TriggerBat,PIN_EchoBat)<=15)  //15cm
         { 
@@ -329,6 +336,8 @@ void loop() {
               zowi.turn(1,1000,1);
             }
           }
+
+          if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpenMouth]);}
         
         }
         break;
@@ -347,13 +356,14 @@ void loop() {
             ledmatrix.writeFull(mouthType[bigSurprise]);
             S_OhOoh();
 
+            if(buttonPushed){break;}
             ledmatrix.writeFull(mouthType[random(10,21)]);
             move(random(1,20));
             zowi.home();
             delay(50); //Wait for possible noise of the servos while get home
           }
           
-          ledmatrix.writeFull(mouthType[happyOpenMouth]);
+          if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpenMouth]);}
         }
         break;
         

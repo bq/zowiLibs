@@ -371,3 +371,51 @@ void S_fastAlarm()
             ZowiTone(PIN_Buzzer,i,10,10);
     }
 }
+
+//-- Buttons' sounds:
+void S_buttonPushed(){
+    for (int i=note_E6; i<note_G6; i=i*1.03) {
+        ZowiTone(PIN_Buzzer,i,20,2);
+    }
+    delay(30);
+    for (int i=note_E6; i<note_D7; i=i*1.04) {
+        ZowiTone(PIN_Buzzer,i,10,2);
+    }
+
+}
+
+void S_mode1(){
+
+    //ZowiTone(PIN_Buzzer,note_E6,50,100);
+    //ZowiTone(PIN_Buzzer,note_E6,100,0);
+    
+
+    for (int i=note_E6; i<note_A6; i=i*1.04) {
+              ZowiTone(PIN_Buzzer,i,20,10);
+    }
+
+
+}
+
+void S_mode2(){
+
+    //ZowiTone(PIN_Buzzer,note_G6,50,100);
+    //ZowiTone(PIN_Buzzer,note_G6,100,0);
+    for (int i=note_G6; i<note_D7; i=i*1.04) {
+            ZowiTone(PIN_Buzzer,i,20,10);
+    }
+
+}
+
+void S_mode3(){
+
+        ZowiTone(PIN_Buzzer,note_E6,50,100); //D6
+        ZowiTone(PIN_Buzzer,note_G6,50,100); //E6
+        ZowiTone(PIN_Buzzer,note_D7,100,0);  //G6
+}
+
+void S_mode4(){
+
+        //...
+        
+}
