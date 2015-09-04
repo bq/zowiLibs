@@ -148,17 +148,17 @@ void setup() {
 
 
   //RandomSeed
-  randomSeed (analogRead(PIN_NoiseSensor));
+  randomSeed(analogRead(PIN_NoiseSensor));
 
   //Interrumptions
   enableInterrupt(PIN_SecondButton, secondButtonPushed, RISING);
   enableInterrupt(PIN_ThirdButton, thirdButtonPushed, RISING);
 
   // Setup callbacks for SerialCommand commands 
-  SCmd.addCommand("M", receiveMovement);  //  sendAck();
   SCmd.addCommand("S", stopp);            //  sendAck();
   SCmd.addCommand("L", receiveLED);       //  sendAck();
   SCmd.addCommand("T", recieveBuzzer);    //  sendAck();
+  SCmd.addCommand("M", receiveMovement);  //  sendAck();
   SCmd.addCommand("D", requestDistance);
   SCmd.addCommand("N", requestNoise);
   SCmd.addCommand("B", requestBattery);
@@ -193,12 +193,12 @@ void setup() {
   ledmatrix.writeFull(mouthType[smile]);
   S_happy();
 
-  delay(500);
+  delay(200);
   zowi.jump(1,700);
   delay(200);
   zowi.shakeLeg(1,T,1);
   
-  delay(500);
+  delay(300);
   ledmatrix.writeFull(mouthType[smallSurprise]);
   zowi.swing(2,800,20);  
 
@@ -269,7 +269,7 @@ void loop() {
             ZowiDreaming();
             if(buttonPushed){break;}  
           }
-          
+
           if(!buttonPushed){
             ledmatrix.writeFull(mouthType[lineMouth]);
             S_confused();
@@ -287,9 +287,11 @@ void loop() {
         randomDance=random(5,21); //5,20
         if((randomDance>14)&&(randomDance<19)){
               randomSteps=1;
+              T=1600;
         }
         else{
               randomSteps=random(3,6);  //3,5
+              T=1000;
         }
         
         ledmatrix.writeFull(mouthType[random(10,21)]);
@@ -359,11 +361,16 @@ void loop() {
       //MODE 3 - ZowiPad control  
       case 4:
 
-        SCmd.readSerial();
-        if (endmove==0)
-        {
-          move(moveId);
+        if(zowi.getStatus()==false){
+
+          SCmd.readSerial();
+          if (endmove==0) 
+          {
+            move(moveId);
+          }
+
         }
+        
         break;
         
 
@@ -554,12 +561,46 @@ void thirdButtonPushed(){
 }
 
 
+//Ultrasound Sensor
+long TP_init(int trigger_pin, int echo_pin)
+   {
+    digitalWrite(trigger_pin, LOW);
+    delayMicroseconds(2);
+    digitalWrite(trigger_pin, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(trigger_pin, LOW);
+    long microseconds = pulseIn(echo_pin ,HIGH,100000);
+    return microseconds;
+}
 
+long Distance(int trigger_pin, int echo_pin)
+  {
+    long microseconds = TP_init(trigger_pin, echo_pin);
+    long distance;
+    distance = microseconds/29/2;
+    if (distance == 0){
+      distance = 999;
+    }
+    return distance;
+}
+
+
+
+//Function to receive stop commands. Stop is a reserved word.
+void stopp(){
+
+    sendAck();
+
+    endmove=1;
+    zowi.home();
+}
 
 //Function to receive LED commands
 void receiveLED(){  
 
-  sendAck();
+  //sendAck();
+  stopp();
+
 
   //Examples of receiveLED Bluetooth commands
   //L 00000000100001010010001100000000
@@ -576,11 +617,50 @@ void receiveLED(){
   } 
 }
 
+//Function to receive buzzer commands
+void recieveBuzzer(){
+  
+  //sendAck();
+  stopp();
+
+  int frec; 
+  int duration; 
+  char *arg; 
+  arg = SCmd.next(); 
+  if (arg != NULL) 
+    {
+      frec=atoi(arg);    // Converts a char string to an integer   
+    } 
+  else 
+    {
+      ledmatrix.writeFull(mouthType[xMouth]);
+      delay(4000);
+      ledmatrix.clearMatrix();
+    } 
+  arg = SCmd.next(); 
+  if (arg != NULL) 
+    { 
+      duration=atoi(arg);    // Converts a char string to an integer  
+    }
+  else
+    {
+      ledmatrix.writeFull(mouthType[xMouth]);
+      delay(4000);
+      ledmatrix.clearMatrix();
+    } 
+
+  ZowiTone(PIN_Buzzer0, frec, duration, 0);   
+  // tone(PIN_Buzzer0,frec,duration);
+  // delay(duration);
+  // noTone(PIN_Buzzer0);
+}
+
 
 //Function to receive movement commands
 void receiveMovement(){
 
   sendAck();
+  //stopp();
 
   //Definition of Movement Bluetooth commands
   //M  MoveID  T   MoveSize  
@@ -626,17 +706,12 @@ void receiveMovement(){
     endmove=0;
 }
 
-//Function to receive stop commands. Stop is a reserved word.
-void stopp(){
 
-    sendAck();
-
-    endmove=1;
-    zowi.home();
-}
 
 //Function to execute the right movement according the movement command received.
 void move(int moveId){
+
+
     switch (moveId) {
       case 1: //M 1 1000 
         zowi.walk(1,T,1);
@@ -690,7 +765,7 @@ void move(int moveId){
         zowi.shakeLeg(1,T,1);
         break;
       case 18: //M 18 500 
-        zowi.shakeLeg(1,T,1);
+        zowi.shakeLeg(1,T,-1);
         break;
       case 19: //M 19 500 20
         zowi.jitter(1,T,moveSize);
@@ -700,70 +775,16 @@ void move(int moveId){
         break;
       default:
         break;// do something
-      }
     }
 
-//Function to receive buzzer commands
-void recieveBuzzer(){
-  
-  sendAck();
-
-  int frec; 
-  int duration; 
-  char *arg; 
-  arg = SCmd.next(); 
-  if (arg != NULL) 
-    {
-      frec=atoi(arg);    // Converts a char string to an integer   
-    } 
-  else 
-    {
-      ledmatrix.writeFull(mouthType[xMouth]);
-      delay(4000);
-      ledmatrix.clearMatrix();
-    } 
-  arg = SCmd.next(); 
-  if (arg != NULL) 
-    { 
-      duration=atoi(arg);    // Converts a char string to an integer  
-    }
-  else
-    {
-      ledmatrix.writeFull(mouthType[xMouth]);
-      delay(4000);
-      ledmatrix.clearMatrix();
-    } 
-
-  ZowiTone(PIN_Buzzer0, frec, duration, duration);   
-  // tone(PIN_Buzzer0,frec,duration);
-  // delay(duration);
-  // noTone(PIN_Buzzer0);
+    //endmove=1; 
 }
 
 
 
-//Ultrasound Sensor
-long TP_init(int trigger_pin, int echo_pin)
-   {
-    digitalWrite(trigger_pin, LOW);
-    delayMicroseconds(2);
-    digitalWrite(trigger_pin, HIGH);
-    delayMicroseconds(10);
-    digitalWrite(trigger_pin, LOW);
-    long microseconds = pulseIn(echo_pin ,HIGH,100000);
-    return microseconds;
-}
 
-long Distance(int trigger_pin, int echo_pin)
-  {
-    long microseconds = TP_init(trigger_pin, echo_pin);
-    long distance;
-    distance = microseconds/29/2;
-    if (distance == 0){
-      distance = 999;
-    }
-    return distance;
-}
+
+
 
 
 void requestDistance()

@@ -35,10 +35,12 @@ void Zowi::setTrims(int YL, int YR, int RL, int RR) {
 }
 
 void Zowi::saveTrimsOnEEPROM() {
-  for (int i = 0; i < 4; i++) EEPROM.write(i, servo[i].getTrim());
+  for (int i = 0; i < 4; i++) 
+      EEPROM.write(i, servo[i].getTrim());
 }
 
 void Zowi::moveServos(int time, int  servo_target[]) {
+
   if(time>10){
     for (int i = 0; i < 4; i++) increment[i] = ((servo_target[i]) - servo_position[i]) / (time / 10.0);
     final_time =  millis() + time;
@@ -53,9 +55,12 @@ void Zowi::moveServos(int time, int  servo_target[]) {
     for (int i = 0; i < 4; i++) servo[i].SetPosition(servo_target[i]);
   }
   for (int i = 0; i < 4; i++) servo_position[i] = servo_target[i];
+
+
 }
 
 void Zowi::oscillateServos(int A[4], int O[4], int T, double phase_diff[4], float cycle=1){
+
   for (int i=0; i<4; i++) {
     servo[i].SetO(O[i]);
     servo[i].SetA(A[i]);
@@ -68,13 +73,36 @@ void Zowi::oscillateServos(int A[4], int O[4], int T, double phase_diff[4], floa
         servo[i].refresh();
      }
   }
+
 }
+
+void Zowi::_execute(int A[4], int O[4], int T, double phase_diff[4], float steps = 1.0)
+{
+  zowiBusy=true;
+
+  int cycles=(int)steps;    
+
+  //-- Execute complete cycles
+  if (cycles >= 1) 
+    for(int i = 0; i < cycles; i++) 
+      oscillateServos(A,O, T, phase_diff);
+      
+  //-- Execute the final not complete cycle    
+  oscillateServos(A,O, T, phase_diff,(float)steps-cycles);
+
+  zowiBusy=false;
+}
+
+
 
 //--------------------------------
 //-- Zowi at rest position OLD
 //--------------------------------
 void Zowi::homeold()
 {
+
+  zowiBusy=true;
+
   //-- All the parameters are set to 0
   //-- If the amplitudes are 0, there are no oscillation
   int A[4]= {0, 0, 0, 0};
@@ -83,6 +111,8 @@ void Zowi::homeold()
   
   //-- Let's update the oscillators parameters!
   oscillateServos(A,O,500,phase_diff,1);
+
+  zowiBusy=false;
 }
 
 //--------------------------------
@@ -95,18 +125,6 @@ void Zowi::home()
   
 }
 
-void Zowi::_execute(int A[4], int O[4], int T, double phase_diff[4], float steps = 1.0)
-{
-  int cycles=(int)steps;    
-
-  //-- Execute complete cycles
-  if (cycles >= 1) 
-    for(int i = 0; i < cycles; i++) 
-      oscillateServos(A,O, T, phase_diff);
-      
-  //-- Execute the final not complete cycle    
-  oscillateServos(A,O, T, phase_diff,(float)steps-cycles);
-}
 
 //***********************************************************************************
 //*********************************MOVEMENTS*****************************************
@@ -430,6 +448,9 @@ void Zowi::jitter(float steps, int T, int h)
   
   //-- Let's oscillate the servos!
   oscillateServos(A, O, T, phase_diff, steps); 
+
+
+
 }
 
 
@@ -454,4 +475,11 @@ void Zowi::ascendingTurn(float steps, int T, int h)
   
   //-- Let's oscillate the servos!
   _execute(A, O, T, phase_diff, steps); 
+}
+
+
+
+bool Zowi::getStatus(){
+
+  return(zowiBusy);
 }

@@ -44,10 +44,16 @@ class Zowi
     void moonwalker(float steps=1, int T=900, int h=20, int dir=LEFT);
     void crusaito(float steps=1, int T=900, int h=20, int dir=FORWARD);
     void flapping(float steps=1, int T=1000, int h=20, int dir=FORWARD);
+
+    bool getStatus();
+
+
     
  
   private:
   
+    bool zowiBusy=false;            //control variable
+
     Oscillator servo[4];
     int servo_trim[4];
     int servo_position[4];
