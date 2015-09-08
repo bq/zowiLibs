@@ -339,7 +339,8 @@ void Zowi::flapping(float steps, int T, int h, int dir)
 //--    T: Period of one shake
 //--    dir: RIGHT=Right leg LEFT=Left leg
 //------------------------------------------------------
-void Zowi::shakeLeg (int steps,int T,int dir){
+void Zowi::shakeLeg (int steps,int T,int dir)
+{
 
   //This variable change the amount of shakes
   int numberLegMoves=2;
@@ -383,8 +384,7 @@ void Zowi::shakeLeg (int steps,int T,int dir){
   }
   delay(T);
   //Return to home position
-  
-  
+ 
 }
 
 //-----------------------------------------------------

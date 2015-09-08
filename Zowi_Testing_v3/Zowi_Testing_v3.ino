@@ -5,7 +5,7 @@
 //-- August 2015
 //-- Authors:  Javier Isabel:  javier.isabel@bq.com
 //--           Juan Gonzalez (obijuan): juan.gonzalez@bq.com
-//--           Jose Alberca: jose.alberca@bq.com
+//--           Jose Alberca:   jose.alberca@bq.com
 //--           Anita de Prado: ana.deprado@bq.com
 //-----------------------------------------------------------------
 //-- Experiment with all the features that Zowi have!
@@ -121,6 +121,9 @@ volatile int buttonBPushed=0; //Variable to remember when B button has been push
 unsigned long previousMillis=0;
 int sensorFeedbackOn=0; //Variable to activate the sensor comunication from Zowi to the App
 
+int randomDance=0;
+int randomSteps=0;
+
 
 ////////////////////////////
 // Setup                  //
@@ -159,12 +162,19 @@ void setup() {
   SCmd.addCommand("L", receiveLED);       //  sendAck();
   SCmd.addCommand("T", recieveBuzzer);    //  sendAck();
   SCmd.addCommand("M", receiveMovement);  //  sendAck();
+  SCmd.addCommand("R", receiveName);      //  sendAck();
+  SCmd.addCommand("E", requestName);
   SCmd.addCommand("D", requestDistance);
   SCmd.addCommand("N", requestNoise);
   SCmd.addCommand("B", requestBattery);
   SCmd.addCommand("I", requestProgramId);
+
+
   SCmd.addDefaultHandler(stopp);
 
+
+  //Checking battery
+  //ZowiLowBatteryAlarm();
 
   //-- Zowi wake up!
   //A little moment of initial surprise
@@ -249,15 +259,14 @@ void loop() {
   if  (Serial.available()>0 && state!=4)
   {
     state=4;
-    ledmatrix.writeFull(mouthType[state]);
-    zowi.home();
-    delay(500); //Wait to show the state number 
+    //ledmatrix.writeFull(mouthType[state]);
+    //zowi.home();
+    //delay(500); //Wait to show the state number 
     ledmatrix.writeFull(mouthType[happyOpenMouth]);
   }
 
 
-  int randomDance=0;
-  int randomSteps=0;
+  
   //----------------------------------
 
   switch (state) {
@@ -267,7 +276,7 @@ void loop() {
       case 0:
         
       
-        if (millis()-previousMillis>=8000)
+        if (millis()-previousMillis>=10000)
         {
           //Zowi se duerme!!
           for(int i=0; i<4;i++){
@@ -622,7 +631,7 @@ void receiveLED(){
   //Serial.println (arg);
   if (arg != NULL) 
   {
-      matrix=strtoul(arg,&endstr,2);    // Converts a char string to an integer 
+      matrix=strtoul(arg,&endstr,2);    // Converts a char string to unsigned long integer
       ledmatrix.writeFull(matrix);
   } 
 }
@@ -791,7 +800,53 @@ void move(int moveId){
 }
 
 
+void receiveName(){
 
+  stopp();
+
+  char newZowiName[11] = "";  //Variable to store data read from Serial.
+  int eeAddress = 5;          //Location we want the data to be in EEPROM.
+  char *arg; 
+  arg = SCmd.next(); 
+  
+  if (arg != NULL) {
+
+    //Complete newZowiName char string
+    int k = 0;
+    while((*arg) && (k<11)){ 
+        newZowiName[k]=*arg++;
+        k++;
+    }
+    
+    EEPROM.put(eeAddress, newZowiName); 
+
+  }
+  else 
+  {
+    ledmatrix.writeFull(mouthType[xMouth]);
+    delay(4000);
+    ledmatrix.clearMatrix();
+  } 
+}
+
+
+void requestName(){
+
+
+  char actualZowiName[11]= "";  //Variable to store data read from EEPROM.
+  int eeAddress = 5;            //EEPROM address to start reading from
+  
+
+  //Get the float data from the EEPROM at position 'eeAddress'
+  EEPROM.get(eeAddress, actualZowiName);
+
+
+  Serial.print("&&");
+  Serial.print(actualZowiName);
+  Serial.println("%%");
+  Serial.flush();
+
+}
 
 
 
@@ -819,7 +874,7 @@ void requestNoise()
 
 void requestBattery()
 {
-       //The first read of the batery is often a wrong reading, so we read it two times. 
+    //The first read of the batery is often a wrong reading, so we read it two times. 
     double batteryLevel= battery.readBatPercent();
     batteryLevel= battery.readBatPercent();
 
@@ -879,6 +934,35 @@ void ZowiDreaming(){
   }
 
   delay(500);
+}
+
+
+
+void ZowiLowBatteryAlarm(){
+
+  //The first read of the batery is often a wrong reading, so we read it two times. 
+  double batteryLevel= battery.readBatPercent();
+  batteryLevel= battery.readBatPercent();
+
+  if(batteryLevel<80){
+      
+      while(!buttonPushed){
+
+          ledmatrix.writeFull(mouthType[thunder]);
+          for (int i=880; i<2000; i=i*1.04) {  //A5 = 880
+            ZowiTone(PIN_Buzzer,i,8,3);
+          }
+          delay(30);
+          for (int i=2000; i>880; i=i/1.02) {  //A5 = 880
+            ZowiTone(PIN_Buzzer,i,8,3);
+          }
+
+          ledmatrix.clearMatrix();
+          delay(500);
+      }
+       
+  }
+
 }
 
 
