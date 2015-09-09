@@ -56,10 +56,10 @@ BatReader battery;
           -----   ------
           */
 
-          #define PIN_YL 3 //servo[0]
-          #define PIN_YR 2 //servo[1]
-          #define PIN_RL 5 //servo[2]
-          #define PIN_RR 4 //servo[3]
+          #define PIN_YL 2 //servo[0]
+          #define PIN_YR 3 //servo[1]
+          #define PIN_RL 4 //servo[2]
+          #define PIN_RR 5 //servo[3]
           
           
           
@@ -78,11 +78,12 @@ BatReader battery;
 #define TRIM_YL  3
 */
 
-//EVT3-2 *
-#define TRIM_RR   8
-#define TRIM_RL   -22
-#define TRIM_YR   4
-#define TRIM_YL  6
+// //EVT3-2
+ //#define TRIM_RR   8
+ //#define TRIM_RL   -22
+ //#define TRIM_YR   4
+ //#define TRIM_YL  6
+
 
 
 
@@ -143,9 +144,8 @@ void setup() {
   
   //Set the servo pins
   zowi.init(PIN_YL, PIN_YR, PIN_RL, PIN_RR,true);
-
-
-  //Uncomment this to set the servo trims manually and save on EEPROM 
+ 
+ //Uncomment this to set the servo trims manually and save on EEPROM 
   //zowi.setTrims(TRIM_YL, TRIM_YR, TRIM_RL, TRIM_RR);
   //zowi.saveTrimsOnEEPROM(); //Uncomment this only for one upload when you finaly set the trims.
 
@@ -157,7 +157,7 @@ void setup() {
   enableInterrupt(PIN_SecondButton, secondButtonPushed, RISING);
   enableInterrupt(PIN_ThirdButton, thirdButtonPushed, RISING);
 
-  // Setup callbacks for SerialCommand commands 
+  //Setup callbacks for SerialCommand commands 
   SCmd.addCommand("S", stopp);            //  sendAck();
   SCmd.addCommand("L", receiveLED);       //  sendAck();
   SCmd.addCommand("T", recieveBuzzer);    //  sendAck();
@@ -168,8 +168,6 @@ void setup() {
   SCmd.addCommand("N", requestNoise);
   SCmd.addCommand("B", requestBattery);
   SCmd.addCommand("I", requestProgramId);
-
-
   SCmd.addDefaultHandler(stopp);
 
 
@@ -184,7 +182,7 @@ void setup() {
   S_connection(); 
 
 
-  //animation uuuh
+  //-- Animation uuuh
   int time_anim = 150;
   for (int i=0;i<(sizeof(littleUuh)/sizeof(unsigned long int));i++)
   {
@@ -199,6 +197,10 @@ void setup() {
   }
   
 
+  //--Send Zowi name
+  requestName();
+
+
   //Smile for a happy Zowi
   ledmatrix.writeFull(mouthType[smile]);
   S_happy();
@@ -212,7 +214,7 @@ void setup() {
   ledmatrix.writeFull(mouthType[smallSurprise]);
   zowi.swing(2,800,20);  
 
-    //Zowi's resting position
+  //Zowi's resting position
   zowi.home();
   ledmatrix.writeFull(mouthType[happyOpenMouth]);
 
@@ -274,9 +276,9 @@ void loop() {
 
       //MODE 0 - Zowi Wait
       case 0:
-        
       
-        if (millis()-previousMillis>=10000)
+      
+        if (millis()-previousMillis>=20000)
         {
           //Zowi se duerme!!
           for(int i=0; i<4;i++){
@@ -295,6 +297,7 @@ void loop() {
           if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpenMouth]);} 
           
         }
+
         break;
       
 
@@ -832,7 +835,6 @@ void receiveName(){
 
 void requestName(){
 
-
   char actualZowiName[11]= "";  //Variable to store data read from EEPROM.
   int eeAddress = 5;            //EEPROM address to start reading from
   
@@ -842,14 +844,12 @@ void requestName(){
 
 
   Serial.print("&&");
+  Serial.print("E ");
   Serial.print(actualZowiName);
   Serial.println("%%");
   Serial.flush();
 
 }
-
-
-
 
 
 void requestDistance()
@@ -905,34 +905,45 @@ void sendAck()
 
 void ZowiDreaming(){
 
-  ledmatrix.writeFull(dreamMouth[0]);
-  for (int i=100; i<200; i=i*1.04) {
+  if(!buttonPushed){
+      ledmatrix.writeFull(dreamMouth[0]);
+      for (int i=100; i<200; i=i*1.04) {
         ZowiTone(PIN_Buzzer,i,10,10);
+      }
   }
   
-  ledmatrix.writeFull(dreamMouth[1]);
-  for (int i=200; i<300; i=i*1.04) {
-        ZowiTone(PIN_Buzzer,i,10,10);
+  if(!buttonPushed){
+    ledmatrix.writeFull(dreamMouth[1]);
+    for (int i=200; i<300; i=i*1.04) {
+          ZowiTone(PIN_Buzzer,i,10,10);
+    }    
   }
+  
 
-  ledmatrix.writeFull(dreamMouth[2]);
-  for (int i=300; i<500; i=i*1.04) {
-        ZowiTone(PIN_Buzzer,i,10,10);
+  if(!buttonPushed){
+    ledmatrix.writeFull(dreamMouth[2]);
+    for (int i=300; i<500; i=i*1.04) {
+          ZowiTone(PIN_Buzzer,i,10,10);
+    }    
   }
 
   delay(500);
   
-  ledmatrix.writeFull(dreamMouth[1]);
-  for (int i=400; i>250; i=i/1.04) {
-        ZowiTone(PIN_Buzzer,i,10,0);
+  if(!buttonPushed){
+    ledmatrix.writeFull(dreamMouth[1]);
+    for (int i=400; i>250; i=i/1.04) {
+          ZowiTone(PIN_Buzzer,i,10,0);
+    }    
   }
+  
 
-
-  ledmatrix.writeFull(dreamMouth[0]);
-  for (int i=250; i>100; i=i/1.04) {
-        ZowiTone(PIN_Buzzer,i,10,0);
+  if(!buttonPushed){
+    ledmatrix.writeFull(dreamMouth[0]);
+    for (int i=250; i>100; i=i/1.04) {
+          ZowiTone(PIN_Buzzer,i,10,0);
+    }  
   }
-
+  
   delay(500);
 }
 
@@ -944,7 +955,7 @@ void ZowiLowBatteryAlarm(){
   double batteryLevel= battery.readBatPercent();
   batteryLevel= battery.readBatPercent();
 
-  if(batteryLevel<80){
+  if(batteryLevel<15){
       
       while(!buttonPushed){
 
