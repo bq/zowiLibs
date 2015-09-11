@@ -2,7 +2,7 @@
 //----------------------------------------------------------------
 //-- Zowi: Testing the complete pack
 //-- (c) BQ. Released under a GPL licencse
-//-- August 2015
+//-- September 2015
 //-- Authors:  Javier Isabel:  javier.isabel@bq.com
 //--           Juan Gonzalez (obijuan): juan.gonzalez@bq.com
 //--           Jose Alberca:   jose.alberca@bq.com
@@ -84,23 +84,26 @@ BatReader battery;
  //#define TRIM_YR   4
  //#define TRIM_YL  6
 
+//EVT??-China
+ // #define TRIM_YL  -18
+ // #define TRIM_YR  -7
+ // #define TRIM_RL  -17
+ // #define TRIM_RR  -6
 
 
-
-
-//bqBAT
+//---Zowi US sensor
 long TP_init(int trigger_pin, int echo_pin);
 long Distance(int trigger_pin, int echo_pin);
 #define PIN_TriggerBat 8
 #define PIN_EchoBat 9
 
-//Noise Sensor
+//---Zowi Noise Sensor
 #define PIN_NoiseSensor A6
 
-//Buzzer
+//---Zowi Buzzer
 #define PIN_Buzzer0 10
 
-//Buttons
+//---Zowi Buttons
 #define PIN_SecondButton 6
 #define PIN_ThirdButton 7
 
@@ -111,15 +114,23 @@ long Distance(int trigger_pin, int echo_pin);
 ////////////////////////////
 
 int programID=1; //Each program will have a ID in order to 
+
+int trim_YL = 0;  //servo[0]
+int trim_YR = 0;  //servo[1]
+int trim_RL = 0;  //servo[2]
+int trim_RR = 0;  //servo[3]
+
 int T=1000; //Initial duration of movement
 int moveId=0; //Number of movement
 int endmove=1; // 1= stop 0= moving
 int moveSize=15; //Many movements accept a moveSize parameter asociated with the height of that movement
+
 volatile int state=0; //State of zowi state machine
-volatile int buttonPushed=0; //Variable to remember when a button has been pushed
+volatile int buttonPushed=0;  //Variable to remember when a button has been pushed
 volatile int buttonAPushed=0; //Variable to remember when A button has been pushed
 volatile int buttonBPushed=0; //Variable to remember when B button has been pushed
 unsigned long previousMillis=0;
+
 int sensorFeedbackOn=0; //Variable to activate the sensor comunication from Zowi to the App
 
 int randomDance=0;
@@ -136,8 +147,8 @@ void setup() {
   Serial.begin(115200);  
   
   //PinMode of the components
-  pinMode(PIN_EchoBat, INPUT );
-  pinMode(PIN_TriggerBat, OUTPUT );
+  pinMode(PIN_EchoBat,INPUT);
+  pinMode(PIN_TriggerBat,OUTPUT);
   pinMode(PIN_Buzzer0,OUTPUT);
   pinMode(PIN_SecondButton,INPUT);
   pinMode(PIN_ThirdButton,INPUT);
@@ -162,6 +173,8 @@ void setup() {
   SCmd.addCommand("L", receiveLED);       //  sendAck();
   SCmd.addCommand("T", recieveBuzzer);    //  sendAck();
   SCmd.addCommand("M", receiveMovement);  //  sendAck();
+  SCmd.addCommand("C", receiveTrims);     //  sendAck();
+  SCmd.addCommand("G", receiveServo);     //  sendAck();
   SCmd.addCommand("R", receiveName);      //  sendAck();
   SCmd.addCommand("E", requestName);
   SCmd.addCommand("D", requestDistance);
@@ -542,11 +555,11 @@ move(moveId);
 //zowi.walk(1,1000,1);
 
 //-------------------------------------------
-//Uncomment this for a constant Batery Level test with the serial monitor.
-/*float bateryLevel=(map(analogRead(A7),0,1023,0,500));
-bateryLevel=bateryLevel/100;
-Serial.println(bateryLevel);
-delay(1000);*/
+// //Uncomment this for a constant Batery Level test with the serial monitor.
+// float bateryLevel=(map(analogRead(A7),0,1023,325,500));
+// bateryLevel=bateryLevel/100;
+// Serial.println(bateryLevel);
+// delay(1000);
 
 
 }
@@ -561,11 +574,7 @@ delay(1000);*/
 
 //Function executed when second button is pushed
 void secondButtonPushed(){  
-    // if(state<4 && buttonPushed==0)
-    // {
-    //   state++; 
-           
-    // }  
+
     buttonPushed=1;
     buttonAPushed=1;
     ledmatrix.writeFull(mouthType[smallSurprise]);  
@@ -573,10 +582,7 @@ void secondButtonPushed(){
 
 //Function executed when third button is pushed
 void thirdButtonPushed(){ 
-    // if(state>1 && buttonPushed==0)
-    // {
-    //   state--;
-    // }
+
     buttonPushed=1;
     buttonBPushed=1;
     ledmatrix.writeFull(mouthType[smallSurprise]);
@@ -591,7 +597,7 @@ long TP_init(int trigger_pin, int echo_pin)
     digitalWrite(trigger_pin, HIGH);
     delayMicroseconds(10);
     digitalWrite(trigger_pin, LOW);
-    long microseconds = pulseIn(echo_pin ,HIGH,100000);
+    long microseconds = pulseIn(echo_pin,HIGH,100000);
     return microseconds;
 }
 
@@ -620,9 +626,7 @@ void stopp(){
 //Function to receive LED commands
 void receiveLED(){  
 
-  //sendAck();
-  stopp();
-
+  stopp(); //stop and sendAck
 
   //Examples of receiveLED Bluetooth commands
   //L 00000000100001010010001100000000
@@ -632,67 +636,144 @@ void receiveLED(){
   char *endstr;
   arg=SCmd.next();
   //Serial.println (arg);
-  if (arg != NULL) 
-  {
+  if (arg != NULL) {
       matrix=strtoul(arg,&endstr,2);    // Converts a char string to unsigned long integer
       ledmatrix.writeFull(matrix);
-  } 
+  }else {
+    ledmatrix.writeFull(mouthType[xMouth]);
+    delay(2000);
+    ledmatrix.clearMatrix();
+  }
 }
 
 //Function to receive buzzer commands
 void recieveBuzzer(){
   
-  //sendAck();
-  stopp();
+  stopp(); //stop and sendAck
 
-  int frec; 
+  bool error = false; 
+  int frec;
   int duration; 
   char *arg; 
+  
   arg = SCmd.next(); 
-  if (arg != NULL) 
-    {
-      frec=atoi(arg);    // Converts a char string to an integer   
-    } 
-  else 
-    {
-      ledmatrix.writeFull(mouthType[xMouth]);
-      delay(4000);
-      ledmatrix.clearMatrix();
-    } 
+  if (arg != NULL) { frec=atoi(arg); }    // Converts a char string to an integer   
+  else {error=true;}
+  
   arg = SCmd.next(); 
-  if (arg != NULL) 
-    { 
-      duration=atoi(arg);    // Converts a char string to an integer  
-    }
-  else
-    {
-      ledmatrix.writeFull(mouthType[xMouth]);
-      delay(4000);
-      ledmatrix.clearMatrix();
-    } 
+  if (arg != NULL) { duration=atoi(arg); } // Converts a char string to an integer  
+  else {error=true;}
 
-  ZowiTone(PIN_Buzzer0, frec, duration, 0);   
-  // tone(PIN_Buzzer0,frec,duration);
-  // delay(duration);
-  // noTone(PIN_Buzzer0);
+  if(error==true){
+      ledmatrix.writeFull(mouthType[xMouth]);
+      delay(2000);
+      ledmatrix.clearMatrix();
+
+  }else{ 
+
+    ZowiTone(PIN_Buzzer0, frec, duration, 0);   
+  }
 }
 
+//Function to receive TRims commands
+void receiveTrims(){  
+
+  sendAck();
+
+  //Definition of Servo Bluetooth command
+  //C trim_YL trim_YR trim_RL trim_RR
+  //Examples of receiveTrims Bluetooth commands
+  //C 20 0 -8 3
+  bool error = false;
+  char *arg;
+  arg=SCmd.next();
+  if (arg != NULL) { trim_YL=atoi(arg); }    // Converts a char string to an integer   
+  else {error=true;}
+
+  arg = SCmd.next(); 
+  if (arg != NULL) { trim_YR=atoi(arg); }    // Converts a char string to an integer  
+  else {error=true;}
+
+  arg = SCmd.next(); 
+  if (arg != NULL) { trim_RL=atoi(arg); }    // Converts a char string to an integer  
+  else {error=true;}
+
+  arg = SCmd.next(); 
+  if (arg != NULL) { trim_RR=atoi(arg); }    // Converts a char string to an integer  
+  else {error=true;}
+
+  
+  if(error==true){
+
+      ledmatrix.writeFull(mouthType[xMouth]);
+      delay(2000);
+      ledmatrix.clearMatrix();
+
+  }else{ //Save it on EEPROM
+    zowi.setTrims(trim_YL, trim_YR, trim_RL, trim_RR);
+    zowi.saveTrimsOnEEPROM(); //Uncomment this only for one upload when you finaly set the trims.
+  } 
+}
+
+//Function to receive Servo commands
+void receiveServo(){  
+
+  sendAck();
+
+  //Definition of Servo Bluetooth command
+  //G  servo_YL servo_YR servo_RL servo_RR 
+  //Example of receiveServo Bluetooth commands
+  //G 90 85 96 78 
+  bool error = false;
+  char *arg;
+  int servo_YL,servo_YR,servo_RL,servo_RR;
+
+   arg=SCmd.next();
+  if (arg != NULL) { servo_YL=atoi(arg); }    // Converts a char string to an integer   
+  else {error=true;}
+
+  arg = SCmd.next(); 
+  if (arg != NULL) { servo_YR=atoi(arg); }    // Converts a char string to an integer  
+  else {error=true;}
+
+  arg = SCmd.next(); 
+  if (arg != NULL) { servo_RL=atoi(arg); }    // Converts a char string to an integer  
+  else {error=true;}
+
+  arg = SCmd.next(); 
+  if (arg != NULL) { servo_RR=atoi(arg); }    // Converts a char string to an integer  
+  else {error=true;}
+
+  
+  if(error==true){
+
+      ledmatrix.writeFull(mouthType[xMouth]);
+      delay(2000);
+      ledmatrix.clearMatrix();
+
+  }else{ //Update Servo:
+
+    int servoPos[4]={servo_YL, servo_YR, servo_RL, servo_RR}; 
+    zowi.moveServos(200, servoPos);   //Move 200ms
+    
+  } 
+}
 
 //Function to receive movement commands
 void receiveMovement(){
 
   sendAck();
-  //stopp();
 
   //Definition of Movement Bluetooth commands
   //M  MoveID  T   MoveSize  
+  bool error = false;
   char *arg; 
   arg = SCmd.next(); 
   if (arg != NULL) {moveId=atoi(arg);}
   else 
   {
     ledmatrix.writeFull(mouthType[xMouth]);
-    delay(4000);
+    delay(2000);
     ledmatrix.clearMatrix();
     moveId=0;
   }
@@ -701,7 +782,7 @@ void receiveMovement(){
   else 
   {
     ledmatrix.writeFull(mouthType[xMouth]);
-    delay(4000);
+    delay(2000);
     ledmatrix.clearMatrix();
     T=1000;
   }
@@ -796,7 +877,7 @@ void move(int moveId){
         zowi.ascendingTurn(1,T,moveSize);
         break;
       default:
-        break;// do something
+        break;
     }
 
     //endmove=1; 
@@ -805,7 +886,7 @@ void move(int moveId){
 
 void receiveName(){
 
-  stopp();
+  stopp(); //stop and sendAck
 
   char newZowiName[11] = "";  //Variable to store data read from Serial.
   int eeAddress = 5;          //Location we want the data to be in EEPROM.
