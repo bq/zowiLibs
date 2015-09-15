@@ -1,4 +1,5 @@
 
+
 //----------------------------------------------------------------
 //-- Zowi: Testing the complete pack
 //-- (c) BQ. Released under a GPL licencse
@@ -89,6 +90,14 @@ BatReader battery;
  // #define TRIM_YR  -7
  // #define TRIM_RL  -17
  // #define TRIM_RR  -6
+
+//EVT- Diseno
+ // #define TRIM_YL  -1
+ // #define TRIM_YR  -1
+ // #define TRIM_RL  -7
+ // #define TRIM_RR  5
+
+
 
 
 //---Zowi US sensor
@@ -293,6 +302,8 @@ void loop() {
       
         if (millis()-previousMillis>=20000)
         {
+          previousMillis = 0;
+          
           //Zowi se duerme!!
           for(int i=0; i<4;i++){
 
