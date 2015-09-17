@@ -78,7 +78,7 @@ void Zowi::oscillateServos(int A[4], int O[4], int T, double phase_diff[4], floa
 
 void Zowi::_execute(int A[4], int O[4], int T, double phase_diff[4], float steps = 1.0)
 {
-  zowiBusy=true;
+  //zowiBusy=true;
 
   int cycles=(int)steps;    
 
@@ -90,7 +90,7 @@ void Zowi::_execute(int A[4], int O[4], int T, double phase_diff[4], float steps
   //-- Execute the final not complete cycle    
   oscillateServos(A,O, T, phase_diff,(float)steps-cycles);
 
-  zowiBusy=false;
+  //zowiBusy=false;
 }
 
 
@@ -100,8 +100,7 @@ void Zowi::_execute(int A[4], int O[4], int T, double phase_diff[4], float steps
 //--------------------------------
 void Zowi::homeold()
 {
-
-  zowiBusy=true;
+  //zowiBusy=true;
 
   //-- All the parameters are set to 0
   //-- If the amplitudes are 0, there are no oscillation
@@ -112,7 +111,7 @@ void Zowi::homeold()
   //-- Let's update the oscillators parameters!
   oscillateServos(A,O,500,phase_diff,1);
 
-  zowiBusy=false;
+  //zowiBusy=false;
 }
 
 //--------------------------------
@@ -479,7 +478,7 @@ void Zowi::ascendingTurn(float steps, int T, int h)
 
 
 
-bool Zowi::getStatus(){
+// bool Zowi::getStatus(){
 
-  return(zowiBusy);
-}
+//   return(zowiBusy);
+// }
