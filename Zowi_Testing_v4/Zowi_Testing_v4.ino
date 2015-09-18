@@ -124,6 +124,9 @@ long Distance(int trigger_pin, int echo_pin);
 
 int programID=1; //Each program will have a ID in order to 
 
+char name_fac='$'; //Factory name
+char name_usu='#'; //First name
+
 int trim_YL = 0;  //servo[0]
 int trim_YR = 0;  //servo[1]
 int trim_RL = 0;  //servo[2]
@@ -198,6 +201,19 @@ void setup() {
   S_connection();
   zowi.home();
 
+
+  //If Zowi's name is '&' (factory name) means that is the first time this program is executed.
+  //This first time, Zowi mustn't do anything. Just born at the factory!
+  //5 = EEPROM address that contains first name character
+  if (EEPROM.read(5)==name_fac){ 
+
+    EEPROM.write(5, name_usu); //From now, the name is '#'
+
+    while(true){    
+       delay(1000);
+    }
+  }  
+
   //--Send Zowi name, programID & battery level by bluetooth.
   requestName();
   requestProgramId();
@@ -206,8 +222,6 @@ void setup() {
 
   //Checking battery
   ZowiLowBatteryAlarm();
-
- 
 
 
  //--
@@ -239,7 +253,7 @@ void setup() {
 
   //If Zowi's name is '#' means that Zowi hasn't been baptized
   //5 = EEPROM address that contains first name character
-  if (EEPROM.read(5)=='#'){ 
+  if (EEPROM.read(5)==name_usu){ 
 
     if(!buttonPushed){  
         zowi.jump(1,700);
