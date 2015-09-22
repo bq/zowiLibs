@@ -154,16 +154,16 @@ void ZowiBendTones (float initFrequency, float finalFrequency, float prop, long 
 //--------------------------------------------------------
 void S_connection()
 {
-         ZowiTone(note_E5,50,30);
-         ZowiTone(note_E6,50,30);
-         ZowiTone(note_A6,50,30);
+    ZowiTone(note_E5,50,30);
+    ZowiTone(note_E6,55,25);
+    ZowiTone(note_A6,60,10);
 }
 
 void S_disconnection()
 {
-         ZowiTone(note_E5,50,30);
-         ZowiTone(note_A6,50,30);
-         ZowiTone(note_E6,50,30);
+    ZowiTone(note_E5,50,30);
+    ZowiTone(note_A6,55,25);
+    ZowiTone(note_E6,50,10);
 }
 
 
@@ -180,21 +180,21 @@ void S_buttonPushed(){
 //-- Modes' sounds:
 void S_mode1(){
 
-  ZowiBendTones (note_E6, note_A6, 1.04, 20, 10);
+    ZowiBendTones (note_E6, note_A6, 1.04, 20, 10);
 
 }
 
 void S_mode2(){
 
-   ZowiBendTones (note_G6, note_D7, 1.04, 20, 10);
+    ZowiBendTones (note_G6, note_D7, 1.04, 20, 10);
 
 }
 
 void S_mode3(){
 
-        ZowiTone(note_E6,50,100); //D6
-        ZowiTone(note_G6,50,100); //E6
-        ZowiTone(note_D7,100,0);  //G6
+    ZowiTone(note_E6,50,100); //D6
+    ZowiTone(note_G6,50,80); //E6
+    ZowiTone(note_D7,100,0);  //G6
 }
 
 void S_mode4(){
@@ -203,13 +203,31 @@ void S_mode4(){
         
 }
 
+//-- Hello' sounds:
+
+void Hello_long(){
+
+    ZowiTone(note_D6,70,40); //D6
+    ZowiTone(note_E6,120,120); //E6
+    ZowiTone(note_G6,70,40);  //G6
+    ZowiTone(note_A6,120,130); //D6
+    ZowiTone(note_G6,150,10); //E6
+        
+}
+
+void Hello_short(){
+
+    ZowiTone(note_B6,80,45); //D6
+    ZowiTone(note_G6,140,10); //E6
+        
+}
 
 
 //-- Other sounds:
 void S_surprise() 
 {         
-      ZowiBendTones(800, 2000, 1.02, 18, 0);
-      ZowiBendTones(2000, 800, 1.02, 13, 0);
+    ZowiBendTones(800, 2150, 1.02, 10, 0);
+    ZowiBendTones(2149, 800, 1.03, 7, 0);
 }
 
 void S_OhOoh() 
@@ -236,9 +254,9 @@ void S_OhOoh2()
 
 void S_love() 
 {
-      ZowiBendTones(700, 900, 1.02, 20, 4);
-      //delay(10);
-      ZowiBendTones(900, 650, 1.01, 20, 4);
+    ZowiBendTones(700, 900, 1.03, 16, 4);
+    //delay(10);
+    ZowiBendTones(899, 650, 1.01, 18, 7);
 } 
 
 void S_sleeping() //Ronquido
@@ -250,32 +268,36 @@ void S_sleeping() //Ronquido
 
 void S_happy() 
 {
-  ZowiBendTones(1500, 2500, 1.05, 20, 8);
-  ZowiBendTones(2500, 1500, 1.05, 25, 8);
+    ZowiBendTones(1500, 2500, 1.05, 20, 8);
+    ZowiBendTones(2499, 1500, 1.05, 25, 8);
 }  
+
+void S_happy2() 
+{
+    ZowiBendTones(1500, 2000, 1.05, 15, 8);
+    delay(100);
+    ZowiBendTones(1900, 2500, 1.05, 10, 8);
+}
 
 void S_superHappy()
 {
-  ZowiBendTones(2000, 6000, 1.05, 8, 2);
-  delay(50);
-  ZowiBendTones(6000, 2000, 1.05, 15, 2);
+    ZowiBendTones(2000, 6000, 1.05, 8, 3);
+    delay(50);
+    ZowiBendTones(5999, 2000, 1.05, 13, 2);
 }
 
 void S_sad() 
 {       
-      for (int i=note_A5; i>note_E5; i=i/1.02) {
-        ZowiTone(i,20,0);
-        delay(250);
-      }
+    ZowiBendTones(880, 669, 1.02, 20, 200);
 }
 
 
 void S_confused() 
 {
-      ZowiBendTones(1000, 1700, 1.02, 8, 2); 
-      ZowiBendTones(1700, 500, 1.02, 8, 2);
-      ZowiBendTones(1000, 1700, 1.05, 8, 10);
-}  
+    ZowiBendTones(1000, 1700, 1.03, 8, 2); 
+    ZowiBendTones(1699, 500, 1.04, 8, 3);
+    ZowiBendTones(1000, 1700, 1.05, 9, 10);
+} 
 
 void S_question()
 {
