@@ -4,10 +4,10 @@
 //-- Zowi: Testing the complete pack
 //-- (c) BQ. Released under a GPL licencse
 //-- September 2015
-//-- Authors:  Javier Isabel:  javier.isabel@bq.com
-//--           Juan Gonzalez (obijuan): juan.gonzalez@bq.com
-//--           Jose Alberca:   jose.alberca@bq.com
+//-- Authors:  Jose Alberca:   jose.alberca@bq.com
 //--           Anita de Prado: ana.deprado@bq.com
+//--           Javier Isabel:  javier.isabel@bq.com
+//--           Juan Gonzalez (obijuan): juan.gonzalez@bq.com
 //-----------------------------------------------------------------
 //-- Experiment with all the features that Zowi have!
 //-----------------------------------------------------------------
@@ -127,11 +127,6 @@ int programID=1; //Each program will have a ID in order to
 char name_fac='$'; //Factory name
 char name_fir='#'; //First name
 
-int trim_YL = 0;  //servo[0]
-int trim_YR = 0;  //servo[1]
-int trim_RL = 0;  //servo[2]
-int trim_RR = 0;  //servo[3]
-
 int T=1000; //Initial duration of movement
 int moveId=0; //Number of movement
 int endmove=1; // 1= stop 0= moving
@@ -202,6 +197,43 @@ void setup() {
   zowi.home();
 
 
+
+  //%%%%%%%%%%%%%%%%%%%
+  //%%%PRUEBAS GESTOS Y ANIMACIONES
+   //ledmatrix.writeFull(mouthType[culito]);  
+    
+   //  delay(3000);
+   //  ZowiHappy();
+
+   //  delay(3000);
+   //  ZowiSuperHappy();
+
+   //  delay(3000);
+   //  ZowiAngry();
+
+   //  delay(3000);
+   //  ZowiLove();
+
+   //  delay(3000);
+   //  ZowiSleeping();
+    
+   //  delay(3000);
+   //  ZowiConfused();
+    
+   //  delay(3000);
+   //  ZowiSad();
+    
+   //  delay(2000);
+   //  ZowiFart();
+
+
+   // delay(200000);
+  //%%%%%%%%%%%%%%%%%%%
+  //%%%%%%%%%%%%%%%%%%%
+
+
+
+
   //If Zowi's name is '&' (factory name) means that is the first time this program is executed.
   //This first time, Zowi mustn't do anything. Just born at the factory!
   //5 = EEPROM address that contains first name character
@@ -269,8 +301,6 @@ void setup() {
         ledmatrix.writeFull(mouthType[smallSurprise]);
         zowi.swing(2,800,20);  
     }  
-
-    S_happy2();
   }
 
 
@@ -336,26 +366,13 @@ void loop() {
       case 0:
       
       
-        if (millis()-previousMillis>=30000)
+        if (millis()-previousMillis>=40000)   
         {
-          previousMillis = 0;
+          ZowiSleeping();  //Zowi se duerme!!
           
-          //Zowi se duerme!!
-          for(int i=0; i<4;i++){
+           
 
-            ZowiDreaming();
-            if(buttonPushed){break;}  
-          }
-
-          if(!buttonPushed){
-            ledmatrix.writeFull(mouthType[lineMouth]);
-            S_confused();
-            previousMillis=millis();
-          }
-          
-          zowi.home();
-          if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpenMouth]);} 
-          
+          previousMillis=millis();         
         }
 
         break;
@@ -443,14 +460,11 @@ void loop() {
       //MODE 4 - ZowiPad control  
       case 4:
 
-        //if(zowi.()==false){
-
-          SCmd.readSerial();
-          if (endmove==0) 
-          {
-            move(moveId);
-          }
-        //}
+        SCmd.readSerial();
+        if (endmove==0) 
+        {
+          move(moveId);
+        }
       
         break;
         
@@ -637,7 +651,7 @@ void thirdButtonPushed(){
 
 //Ultrasound Sensor
 long TP_init(int trigger_pin, int echo_pin)
-   {
+{
     digitalWrite(trigger_pin, LOW);
     delayMicroseconds(2);
     digitalWrite(trigger_pin, HIGH);
@@ -648,7 +662,7 @@ long TP_init(int trigger_pin, int echo_pin)
 }
 
 long Distance(int trigger_pin, int echo_pin)
-  {
+{
     long microseconds = TP_init(trigger_pin, echo_pin);
     long distance;
     distance = microseconds/29/2;
@@ -660,7 +674,7 @@ long Distance(int trigger_pin, int echo_pin)
 
 
 
-//Function to receive stop commands. Stop is a reserved word.
+//Function to receive stop commands. 'stop' is a reserved word.
 void stopp(){
 
     sendAck();
@@ -672,194 +686,196 @@ void stopp(){
 //Function to receive LED commands
 void receiveLED(){  
 
-  stopp(); //stop and sendAck
+    stopp(); //stop and sendAck
 
-  //Examples of receiveLED Bluetooth commands
-  //L 00000000100001010010001100000000
-  //L 00111111111111111111111111111111 (todos los LED encendidos)
-  unsigned long int matrix;
-  char *arg;
-  char *endstr;
-  arg=SCmd.next();
-  //Serial.println (arg);
-  if (arg != NULL) {
+    //Examples of receiveLED Bluetooth commands
+    //L 00000000100001010010001100000000
+    //L 00111111111111111111111111111111 (todos los LED encendidos)
+    unsigned long int matrix;
+    char *arg;
+    char *endstr;
+    arg=SCmd.next();
+    //Serial.println (arg);
+    if (arg != NULL) {
       matrix=strtoul(arg,&endstr,2);    // Converts a char string to unsigned long integer
       ledmatrix.writeFull(matrix);
-  }else {
-    ledmatrix.writeFull(mouthType[xMouth]);
-    delay(2000);
-    ledmatrix.clearMatrix();
-  }
+    }else {
+      ledmatrix.writeFull(mouthType[xMouth]);
+      delay(2000);
+      ledmatrix.clearMatrix();
+    }
 }
 
 //Function to receive buzzer commands
 void recieveBuzzer(){
   
-  stopp(); //stop and sendAck
+    stopp(); //stop and sendAck
 
-  bool error = false; 
-  int frec;
-  int duration; 
-  char *arg; 
-  
-  arg = SCmd.next(); 
-  if (arg != NULL) { frec=atoi(arg); }    // Converts a char string to an integer   
-  else {error=true;}
-  
-  arg = SCmd.next(); 
-  if (arg != NULL) { duration=atoi(arg); } // Converts a char string to an integer  
-  else {error=true;}
+    bool error = false; 
+    int frec;
+    int duration; 
+    char *arg; 
+    
+    arg = SCmd.next(); 
+    if (arg != NULL) { frec=atoi(arg); }    // Converts a char string to an integer   
+    else {error=true;}
+    
+    arg = SCmd.next(); 
+    if (arg != NULL) { duration=atoi(arg); } // Converts a char string to an integer  
+    else {error=true;}
 
-  if(error==true){
+    if(error==true){
+
       ledmatrix.writeFull(mouthType[xMouth]);
       delay(2000);
       ledmatrix.clearMatrix();
 
-  }else{ 
+    }else{ 
 
-    ZowiTone(frec, duration, 0);   
-  }
+      ZowiTone(frec, duration, 0);   
+    }
 }
 
 //Function to receive TRims commands
 void receiveTrims(){  
 
-  sendAck();
+    sendAck();
 
-  //Definition of Servo Bluetooth command
-  //C trim_YL trim_YR trim_RL trim_RR
-  //Examples of receiveTrims Bluetooth commands
-  //C 20 0 -8 3
-  bool error = false;
-  char *arg;
-  arg=SCmd.next();
-  if (arg != NULL) { trim_YL=atoi(arg); }    // Converts a char string to an integer   
-  else {error=true;}
+    int trim_YL,trim_YR,trim_RL,trim_RR;
 
-  arg = SCmd.next(); 
-  if (arg != NULL) { trim_YR=atoi(arg); }    // Converts a char string to an integer  
-  else {error=true;}
+    //Definition of Servo Bluetooth command
+    //C trim_YL trim_YR trim_RL trim_RR
+    //Examples of receiveTrims Bluetooth commands
+    //C 20 0 -8 3
+    bool error = false;
+    char *arg;
+    arg=SCmd.next();
+    if (arg != NULL) { trim_YL=atoi(arg); }    // Converts a char string to an integer   
+    else {error=true;}
 
-  arg = SCmd.next(); 
-  if (arg != NULL) { trim_RL=atoi(arg); }    // Converts a char string to an integer  
-  else {error=true;}
+    arg = SCmd.next(); 
+    if (arg != NULL) { trim_YR=atoi(arg); }    // Converts a char string to an integer  
+    else {error=true;}
 
-  arg = SCmd.next(); 
-  if (arg != NULL) { trim_RR=atoi(arg); }    // Converts a char string to an integer  
-  else {error=true;}
+    arg = SCmd.next(); 
+    if (arg != NULL) { trim_RL=atoi(arg); }    // Converts a char string to an integer  
+    else {error=true;}
 
-  
-  if(error==true){
+    arg = SCmd.next(); 
+    if (arg != NULL) { trim_RR=atoi(arg); }    // Converts a char string to an integer  
+    else {error=true;}
+
+    
+    if(error==true){
 
       ledmatrix.writeFull(mouthType[xMouth]);
       delay(2000);
       ledmatrix.clearMatrix();
 
-  }else{ //Save it on EEPROM
-    zowi.setTrims(trim_YL, trim_YR, trim_RL, trim_RR);
-    zowi.saveTrimsOnEEPROM(); //Uncomment this only for one upload when you finaly set the trims.
-  } 
+    }else{ //Save it on EEPROM
+      zowi.setTrims(trim_YL, trim_YR, trim_RL, trim_RR);
+      zowi.saveTrimsOnEEPROM(); //Uncomment this only for one upload when you finaly set the trims.
+    } 
 }
 
 //Function to receive Servo commands
 void receiveServo(){  
 
-  sendAck();
+    sendAck();
 
-  //Definition of Servo Bluetooth command
-  //G  servo_YL servo_YR servo_RL servo_RR 
-  //Example of receiveServo Bluetooth commands
-  //G 90 85 96 78 
-  bool error = false;
-  char *arg;
-  int servo_YL,servo_YR,servo_RL,servo_RR;
+    //Definition of Servo Bluetooth command
+    //G  servo_YL servo_YR servo_RL servo_RR 
+    //Example of receiveServo Bluetooth commands
+    //G 90 85 96 78 
+    bool error = false;
+    char *arg;
+    int servo_YL,servo_YR,servo_RL,servo_RR;
 
-   arg=SCmd.next();
-  if (arg != NULL) { servo_YL=atoi(arg); }    // Converts a char string to an integer   
-  else {error=true;}
+    arg=SCmd.next();
+    if (arg != NULL) { servo_YL=atoi(arg); }    // Converts a char string to an integer   
+    else {error=true;}
 
-  arg = SCmd.next(); 
-  if (arg != NULL) { servo_YR=atoi(arg); }    // Converts a char string to an integer  
-  else {error=true;}
+    arg = SCmd.next(); 
+    if (arg != NULL) { servo_YR=atoi(arg); }    // Converts a char string to an integer  
+    else {error=true;}
 
-  arg = SCmd.next(); 
-  if (arg != NULL) { servo_RL=atoi(arg); }    // Converts a char string to an integer  
-  else {error=true;}
+    arg = SCmd.next(); 
+    if (arg != NULL) { servo_RL=atoi(arg); }    // Converts a char string to an integer  
+    else {error=true;}
 
-  arg = SCmd.next(); 
-  if (arg != NULL) { servo_RR=atoi(arg); }    // Converts a char string to an integer  
-  else {error=true;}
+    arg = SCmd.next(); 
+    if (arg != NULL) { servo_RR=atoi(arg); }    // Converts a char string to an integer  
+    else {error=true;}
 
-  
-  if(error==true){
+    
+    if(error==true){
 
       ledmatrix.writeFull(mouthType[xMouth]);
       delay(2000);
       ledmatrix.clearMatrix();
 
-  }else{ //Update Servo:
+    }else{ //Update Servo:
 
-    int servoPos[4]={servo_YL, servo_YR, servo_RL, servo_RR}; 
-    zowi.moveServos(200, servoPos);   //Move 200ms
-    
-  } 
+      int servoPos[4]={servo_YL, servo_YR, servo_RL, servo_RR}; 
+      zowi.moveServos(200, servoPos);   //Move 200ms
+      
+    } 
 }
 
 //Function to receive movement commands
 void receiveMovement(){
 
-  sendAck();
+    sendAck();
 
-  //Definition of Movement Bluetooth commands
-  //M  MoveID  T   MoveSize  
-  bool error = false;
-  char *arg; 
-  arg = SCmd.next(); 
-  if (arg != NULL) {moveId=atoi(arg);}
-  else 
-  {
-    ledmatrix.writeFull(mouthType[xMouth]);
-    delay(2000);
-    ledmatrix.clearMatrix();
-    moveId=0;
-  }
-  arg = SCmd.next(); 
-  if (arg != NULL) {T=atoi(arg);}
-  else 
-  {
-    ledmatrix.writeFull(mouthType[xMouth]);
-    delay(2000);
-    ledmatrix.clearMatrix();
-    T=1000;
-  }
-  arg = SCmd.next(); 
-  if (arg != NULL) {moveSize=atoi(arg);}
-  else 
-  {
-    moveSize =30;
-  }
-  /* Desmarcar para coger parametro direccion 
-  arg = SCmd.next(); 
-  if (arg != NULL) 
-    { 
-      if (*arg=='F'){dir=1;}
-      if (*arg=='B'){dir=-1;}
-    }
-  else 
+    //Definition of Movement Bluetooth commands
+    //M  MoveID  T   MoveSize  
+    bool error = false;
+    char *arg; 
+    arg = SCmd.next(); 
+    if (arg != NULL) {moveId=atoi(arg);}
+    else 
     {
-      ledmatrix.writeFull(mouth[xMouth]);
-      delay(4000);
+      ledmatrix.writeFull(mouthType[xMouth]);
+      delay(2000);
       ledmatrix.clearMatrix();
+      moveId=0;
     }
-    */
-    endmove=0;
+    arg = SCmd.next(); 
+    if (arg != NULL) {T=atoi(arg);}
+    else 
+    {
+      ledmatrix.writeFull(mouthType[xMouth]);
+      delay(2000);
+      ledmatrix.clearMatrix();
+      T=1000;
+    }
+    arg = SCmd.next(); 
+    if (arg != NULL) {moveSize=atoi(arg);}
+    else 
+    {
+      moveSize =30;
+    }
+    /* Desmarcar para coger parametro direccion 
+    arg = SCmd.next(); 
+    if (arg != NULL) 
+      { 
+        if (*arg=='F'){dir=1;}
+        if (*arg=='B'){dir=-1;}
+      }
+    else 
+      {
+        ledmatrix.writeFull(mouth[xMouth]);
+        delay(4000);
+        ledmatrix.clearMatrix();
+      }
+      */
+      endmove=0;
 }
 
 
 
 //Function to execute the right movement according the movement command received.
 void move(int moveId){
-
 
     switch (moveId) {
       case 1: //M 1 1000 
@@ -925,56 +941,53 @@ void move(int moveId){
       default:
         break;
     }
-
-    //endmove=1; 
 }
 
 
 void receiveName(){
 
-  stopp(); //stop and sendAck
+    stopp(); //stop and sendAck
 
-  char newZowiName[11] = "";  //Variable to store data read from Serial.
-  int eeAddress = 5;          //Location we want the data to be in EEPROM.
-  char *arg; 
-  arg = SCmd.next(); 
-  
-  if (arg != NULL) {
-
-    //Complete newZowiName char string
-    int k = 0;
-    while((*arg) && (k<11)){ 
-        newZowiName[k]=*arg++;
-        k++;
-    }
+    char newZowiName[11] = "";  //Variable to store data read from Serial.
+    int eeAddress = 5;          //Location we want the data to be in EEPROM.
+    char *arg; 
+    arg = SCmd.next(); 
     
-    EEPROM.put(eeAddress, newZowiName); 
+    if (arg != NULL) {
 
-  }
-  else 
-  {
-    ledmatrix.writeFull(mouthType[xMouth]);
-    delay(2000);
-    ledmatrix.clearMatrix();
-  } 
+      //Complete newZowiName char string
+      int k = 0;
+      while((*arg) && (k<11)){ 
+          newZowiName[k]=*arg++;
+          k++;
+      }
+      
+      EEPROM.put(eeAddress, newZowiName); 
+    }
+    else 
+    {
+      ledmatrix.writeFull(mouthType[xMouth]);
+      delay(2000);
+      ledmatrix.clearMatrix();
+    } 
 }
 
 
 void requestName(){
 
-   char actualZowiName[11]= "";  //Variable to store data read from EEPROM.
-   int eeAddress = 5;            //EEPROM address to start reading from
-  
-
-   //Get the float data from the EEPROM at position 'eeAddress'
-   EEPROM.get(eeAddress, actualZowiName);
+    char actualZowiName[11]= "";  //Variable to store data read from EEPROM.
+    int eeAddress = 5;            //EEPROM address to start reading from
 
 
-  Serial.print("&&");
-  Serial.print("E ");
-  Serial.print(actualZowiName);
-  Serial.println("%%");
-  Serial.flush();
+    //Get the float data from the EEPROM at position 'eeAddress'
+    EEPROM.get(eeAddress, actualZowiName);
+
+
+    Serial.print("&&");
+    Serial.print("E ");
+    Serial.print(actualZowiName);
+    Serial.println("%%");
+    Serial.flush();
 
 }
 
@@ -1040,12 +1053,12 @@ void sendAck()
 
 void ZowiLowBatteryAlarm(){
 
-  //The first read of the batery is often a wrong reading, so we read it two times. 
-  double batteryLevel= battery.readBatPercent();
-  batteryLevel= battery.readBatPercent();
+    //The first read of the batery is often a wrong reading, so we read it two times. 
+    double batteryLevel= battery.readBatPercent();
+    batteryLevel= battery.readBatPercent();
 
-  if(batteryLevel<40){
-      
+    if(batteryLevel<44){
+        
       while(!buttonPushed){
 
           ledmatrix.writeFull(mouthType[thunder]);
@@ -1056,45 +1069,273 @@ void ZowiLowBatteryAlarm(){
           ZowiBendTones (2000, 880, 1.02, 8, 3);  //A5 = 880
           ledmatrix.clearMatrix();
           delay(500);
-      }
-       
-  }
-
+      } 
+    }
 }
 
-void ZowiDreaming(){
 
-  if(!buttonPushed){
+
+void ZowiSleeping(){
+
+  for(int i=0; i<4;i++){
+
+    if(buttonPushed){break;}
       ledmatrix.writeFull(dreamMouth[0]);
       ZowiBendTones (100, 200, 1.04, 10, 10);
-  }
-  
-  if(!buttonPushed){
-    ledmatrix.writeFull(dreamMouth[1]);
-    ZowiBendTones (200, 300, 1.04, 10, 10);  
-  }
-  
+    
+    if(buttonPushed){break;}
+      ledmatrix.writeFull(dreamMouth[1]);
+      ZowiBendTones (200, 300, 1.04, 10, 10);  
+
+    if(buttonPushed){break;}
+      ledmatrix.writeFull(dreamMouth[2]);
+      ZowiBendTones (300, 500, 1.04, 10, 10);   
+
+    delay(500);
+    
+    if(buttonPushed){break;}
+      ledmatrix.writeFull(dreamMouth[1]);
+      ZowiBendTones (400, 250, 1.04, 10, 0); 
+
+    if(buttonPushed){break;}
+      ledmatrix.writeFull(dreamMouth[0]);
+      ZowiBendTones (250, 100, 1.04, 10, 0); 
+    
+    delay(500);
+  } 
 
   if(!buttonPushed){
-    ledmatrix.writeFull(dreamMouth[2]);
-    ZowiBendTones (300, 500, 1.04, 10, 10);   
+    ledmatrix.writeFull(mouthType[lineMouth]);
+    S_cuddly();
   }
 
-  delay(500);
-  
-  if(!buttonPushed){
-    ledmatrix.writeFull(dreamMouth[1]);
-    ZowiBendTones (400, 250, 1.04, 10, 0); 
-  }
-  
-
-  if(!buttonPushed){
-    ledmatrix.writeFull(dreamMouth[0]);
-    ZowiBendTones (250, 100, 1.04, 10, 0); 
-  }
-  
-  delay(500);
+  zowi.home();
+  if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpenMouth]);}  
 }
+
+
+void ZowiSad(){
+
+  ledmatrix.writeFull(mouthType[sad]);
+  //int servoPos[4]={servo_YL, servo_YR, servo_RL, servo_RR}; 
+  int sadPos[4]={110, 70, 20, 160};
+  int Tm = 700;
+  
+
+  if(!buttonPushed){
+    zowi.moveServos(Tm, sadPos);     
+    ZowiBendTones(880, 830, 1.02, 20, 200);
+  }
+  
+  if(!buttonPushed){
+    ledmatrix.writeFull(mouthType[sadClosedMouth]);
+    ZowiBendTones(830, 790, 1.02, 20, 200);  
+  }
+
+  if(!buttonPushed){
+    ledmatrix.writeFull(mouthType[sadOpenMouth]);
+    ZowiBendTones(790, 740, 1.02, 20, 200);
+  }
+
+  if(!buttonPushed){
+    ledmatrix.writeFull(mouthType[sadClosedMouth]);
+    ZowiBendTones(740, 700, 1.02, 20, 200);
+  }
+
+  if(!buttonPushed){
+    ledmatrix.writeFull(mouthType[sadOpenMouth]);
+    ZowiBendTones(700, 669, 1.02, 20, 200);
+  }
+
+  if(!buttonPushed){
+    ledmatrix.writeFull(mouthType[sad]);
+    delay(500);
+  }  
+
+  zowi.home();
+  delay(300);
+
+  if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpenMouth]);}
+}
+
+
+void ZowiHappy(){
+
+  if(!buttonPushed){
+    ledmatrix.writeFull(mouthType[smile]);
+    S_happy_short();
+  }
+
+  if(!buttonPushed){  
+    zowi.swing(1,800,20); 
+  }
+  
+  if(!buttonPushed){  
+    S_happy_short();
+  }
+    
+  zowi.home();
+  if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpenMouth]);}   
+}
+
+
+void ZowiSuperHappy(){
+
+  if(!buttonPushed){  
+    ledmatrix.writeFull(mouthType[happyOpenMouth]);
+    S_happy();
+  }
+
+  if(!buttonPushed){  
+    zowi.updown(1, 400, 20);
+  }
+
+  if(!buttonPushed){
+    ledmatrix.writeFull(mouthType[smile]);
+    S_superHappy();
+  }
+    
+  zowi.home();  
+  if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpenMouth]);}
+}
+
+
+void ZowiFart(){
+
+  //int servoPos[4]={servo_YL, servo_YR, servo_RL, servo_RR}; 
+  int fartPos_1[4]={90, 90, 145, 122}; //rightBend
+  int fartPos_2[4]={90, 90, 80, 122};
+  int fartPos_3[4]={90, 90, 145, 80};
+  int Tm = 500;
+
+  if(!buttonPushed){
+    zowi.moveServos(Tm, fartPos_1);
+    delay(300);     
+  }
+  
+  if(!buttonPushed){ 
+    ledmatrix.writeFull(mouthType[lineMouth]);
+    S_fart1();  
+    
+  }
+
+  if(!buttonPushed){
+    ledmatrix.writeFull(mouthType[tongueOut]);
+    delay(250);
+  }
+
+  if(!buttonPushed){
+    zowi.moveServos(Tm, fartPos_2);
+    delay(300);
+  }
+
+  if(!buttonPushed){
+    ledmatrix.writeFull(mouthType[lineMouth]);
+    S_fart2(); 
+  }
+
+  if(!buttonPushed){
+    ledmatrix.writeFull(mouthType[tongueOut]);
+    delay(250);
+  }
+  if(!buttonPushed){
+    zowi.moveServos(Tm, fartPos_3);
+    delay(300);
+  }
+  if(!buttonPushed){
+    ledmatrix.writeFull(mouthType[lineMouth]);
+    S_fart3();
+  }
+  if(!buttonPushed){
+    ledmatrix.writeFull(mouthType[tongueOut]);    
+    delay(300);
+  }
+
+
+  zowi.home();
+  delay(500);
+  if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpenMouth]);}
+}
+
+
+void ZowiConfused(){
+
+  //int servoPos[4]={servo_YL, servo_YR, servo_RL, servo_RR}; 
+  //int confusedPos[4]={90, 90, 60, 120};
+  int confusedPos[4]={110, 70, 90, 90};
+  int Tm = 300;
+  
+  zowi.moveServos(Tm, confusedPos); 
+
+  if(!buttonPushed){
+    ledmatrix.writeFull(mouthType[confused]);
+    S_confused();
+  }
+    
+  delay(500);
+  zowi.home();
+
+  if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpenMouth]);}
+}
+
+
+void ZowiAngry(){
+
+  int angryPos[4]={90, 90, 70, 110};
+  int headLefttt[4]={110, 110, 90, 90};
+  int headRighttt[4]={70, 70, 90, 90};
+
+  int Tm = 300;
+  int Tm2 = 200;
+  
+  zowi.moveServos(Tm, angryPos); 
+
+  if(!buttonPushed){  
+    ledmatrix.writeFull(mouthType[angry]);
+
+    //S_angry();
+    ZowiTone(note_A5,100,30);
+    ZowiBendTones(note_A5, note_D6, 1.02, 7, 4);
+    ZowiBendTones(note_D6, note_G6, 1.02, 10, 1);
+    ZowiBendTones(note_G6, note_A5, 1.02, 10, 1);
+    delay(15);
+    ZowiBendTones(note_A5, note_E5, 1.02, 20, 4);
+
+    delay(400);
+
+    zowi.moveServos(Tm2, headLefttt); 
+    ZowiBendTones(note_A5, note_D6, 1.02, 20, 4);
+
+    zowi.moveServos(Tm2, headRighttt); 
+    ZowiBendTones(note_A5, note_E5, 1.02, 20, 4);
+
+  }
+
+  zowi.home();
+  if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpenMouth]);} 
+}
+
+
+void ZowiLove(){
+
+    if(!buttonPushed){ledmatrix.writeFull(mouthType[heart]);}
+
+
+    S_cuddly();
+    delay(200);
+
+    if(!buttonPushed){zowi.crusaito(1,1500,15,1);}
+    if(!buttonPushed){zowi.crusaito(1,1500,15,1);}
+
+
+
+    zowi.home();
+
+    if(!buttonPushed){
+      S_happy_short();
+      ledmatrix.writeFull(mouthType[happyOpenMouth]);
+    }     
+}  
 
 
 
