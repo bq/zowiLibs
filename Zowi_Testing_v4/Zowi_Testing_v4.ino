@@ -182,6 +182,7 @@ void setup() {
   SCmd.addCommand("L", receiveLED);       //  sendAck();
   SCmd.addCommand("T", recieveBuzzer);    //  sendAck();
   SCmd.addCommand("M", receiveMovement);  //  sendAck();
+  SCmd.addCommand("H", receiveGesture);   //  sendAck();
   SCmd.addCommand("C", receiveTrims);     //  sendAck();
   SCmd.addCommand("G", receiveServo);     //  sendAck();
   SCmd.addCommand("R", receiveName);      //  sendAck();
@@ -198,38 +199,41 @@ void setup() {
 
 
 
-  //%%%%%%%%%%%%%%%%%%%
+  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   //%%%PRUEBAS GESTOS Y ANIMACIONES
-   //ledmatrix.writeFull(mouthType[culito]);  
+   //ledmatrix.writeFull(mouthType[culito]);                  
+
+    // delay(3000);
+    // ZowiHappy();
     
-   //  delay(3000);
-   //  ZowiHappy();
+    // delay(3000);
+    // ZowiSuperHappy();
 
-   //  delay(3000);
-   //  ZowiSuperHappy();
-
-   //  delay(3000);
-   //  ZowiAngry();
-
-   //  delay(3000);
-   //  ZowiLove();
-
-   //  delay(3000);
-   //  ZowiSleeping();
+    // delay(3000);
+    // ZowiSad();
     
-   //  delay(3000);
-   //  ZowiConfused();
-    
-   //  delay(3000);
-   //  ZowiSad();
-    
-   //  delay(2000);
-   //  ZowiFart();
+    // delay(3000);
+    // ZowiSleeping();
+
+    // delay(2000);
+    // ZowiFart();
+
+    // delay(3000);
+    // ZowiConfused();
+  
+    // delay(3000);
+    // ZowiLove();
+
+    // delay(3000);
+    // ZowiAngry();  
 
 
-   // delay(200000);
-  //%%%%%%%%%%%%%%%%%%%
-  //%%%%%%%%%%%%%%%%%%%
+     //delay(3000);
+     //ZowiFretful();
+
+     //delay(200000);
+  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
@@ -307,7 +311,7 @@ void setup() {
   //Zowi's resting position
   if(!buttonPushed){ 
     zowi.home();
-    ledmatrix.writeFull(mouthType[happyOpenMouth]);
+    ledmatrix.writeFull(mouthType[happyOpen]);
   }
 
 
@@ -340,7 +344,7 @@ void loop() {
     ledmatrix.writeFull(mouthType[state]);
  
     delay(800); //Wait to show the state number 
-    ledmatrix.writeFull(mouthType[happyOpenMouth]);
+    ledmatrix.writeFull(mouthType[happyOpen]);
 
     buttonPushed=false;
     buttonAPushed=false;
@@ -352,7 +356,7 @@ void loop() {
   if  (Serial.available()>0 && state!=4)
   {
     state=4;
-    ledmatrix.writeFull(mouthType[happyOpenMouth]);
+    ledmatrix.writeFull(mouthType[happyOpen]);
   }
 
 
@@ -426,7 +430,7 @@ void loop() {
             }
           }
 
-          if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpenMouth]);}
+          if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpen]);}
         
         }
         break;
@@ -452,7 +456,7 @@ void loop() {
             delay(50); //Wait for possible noise of the servos while get home
           }
           
-          if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpenMouth]);}
+          if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpen]);}
         }
         break;
         
@@ -732,7 +736,7 @@ void recieveBuzzer(){
 
     }else{ 
 
-      ZowiTone(frec, duration, 0);   
+      ZowiTone(frec, duration, 1);   
     }
 }
 
@@ -829,7 +833,6 @@ void receiveMovement(){
 
     //Definition of Movement Bluetooth commands
     //M  MoveID  T   MoveSize  
-    bool error = false;
     char *arg; 
     arg = SCmd.next(); 
     if (arg != NULL) {moveId=atoi(arg);}
@@ -941,6 +944,60 @@ void move(int moveId){
       default:
         break;
     }
+}
+
+
+void receiveGesture(){
+
+    sendAck();
+
+    //Definition of Movement Bluetooth commands
+    //M  MoveID  T   MoveSize  
+    int gesture = 0;
+    bool error = false;
+    char *arg; 
+    arg = SCmd.next(); 
+    if (arg != NULL) {gesture=atoi(arg);}
+    else 
+    {
+      ledmatrix.writeFull(mouthType[xMouth]);
+      delay(2000);
+      ledmatrix.clearMatrix();
+    }
+
+
+    switch (gesture) {
+      case 1: //H 1 
+        ZowiHappy();
+        break;
+      case 2: //H 2 
+        ZowiSuperHappy();
+        break;
+      case 3: //H 3 
+        ZowiSad();
+        break;
+      case 4: //H 4 
+        ZowiSleeping();
+        break;
+      case 5: //H 5  
+        ZowiFart();
+        break;
+      case 6: //H 6 
+        ZowiConfused();
+        break;
+      case 7: //H 7 
+        ZowiLove();
+        break;
+      case 8: //H 8 
+        ZowiAngry();
+        break;
+      case 9: //H 9  
+        ZowiFretful();
+        break;
+      default:
+        break;
+    }
+
 }
 
 
@@ -1075,7 +1132,110 @@ void ZowiLowBatteryAlarm(){
 
 
 
+
+void ZowiHappy(){
+
+  if(!buttonPushed){
+    ledmatrix.writeFull(mouthType[smile]);
+    S_happy_short();
+  }
+
+  if(!buttonPushed){  
+    zowi.swing(1,800,20); 
+  }
+  
+  if(!buttonPushed){  
+    S_happy_short();
+  }
+    
+  zowi.home();
+  if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpen]);}   
+}
+
+
+void ZowiSuperHappy(){
+
+  if(!buttonPushed){  
+    ledmatrix.writeFull(mouthType[happyOpen]);
+    S_happy();
+  }
+
+  if(!buttonPushed){
+    ledmatrix.writeFull(mouthType[happyClosed]);
+    zowi.tiptoeSwing(1,500,20);
+  }
+
+  if(!buttonPushed){
+    ledmatrix.writeFull(mouthType[happyOpen]);
+    S_superHappy();
+  }
+    
+  if(!buttonPushed){
+    ledmatrix.writeFull(mouthType[happyClosed]);
+    zowi.tiptoeSwing(1,500,20);
+  }  
+    
+
+  zowi.home();  
+  if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpen]);}
+
+}
+
+
+void ZowiSad(){
+
+  ledmatrix.writeFull(mouthType[sad]);
+  //int servoPos[4]={servo_YL, servo_YR, servo_RL, servo_RR}; 
+  int sadPos[4]={110, 70, 20, 160};
+  int Tm = 700;
+  
+
+  if(!buttonPushed){
+    zowi.moveServos(Tm, sadPos);     
+    ZowiBendTones(880, 830, 1.02, 20, 200);
+  }
+  
+  if(!buttonPushed){
+    ledmatrix.writeFull(mouthType[sadClosed]);
+    ZowiBendTones(830, 790, 1.02, 20, 200);  
+  }
+
+  if(!buttonPushed){
+    ledmatrix.writeFull(mouthType[sadOpen]);
+    ZowiBendTones(790, 740, 1.02, 20, 200);
+  }
+
+  if(!buttonPushed){
+    ledmatrix.writeFull(mouthType[sadClosed]);
+    ZowiBendTones(740, 700, 1.02, 20, 200);
+  }
+
+  if(!buttonPushed){
+    ledmatrix.writeFull(mouthType[sadOpen]);
+    ZowiBendTones(700, 669, 1.02, 20, 200);
+  }
+
+  if(!buttonPushed){
+    ledmatrix.writeFull(mouthType[sad]);
+    delay(500);
+  }  
+
+  zowi.home();
+  delay(300);
+
+  if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpen]);}
+}
+
+
 void ZowiSleeping(){
+
+  int bedPos[4]={100, 80, 40, 140};
+  int Tm = 800;
+  
+
+  if(!buttonPushed){
+    zowi.moveServos(Tm, bedPos);     
+  }
 
   for(int i=0; i<4;i++){
 
@@ -1095,11 +1255,11 @@ void ZowiSleeping(){
     
     if(buttonPushed){break;}
       ledmatrix.writeFull(dreamMouth[1]);
-      ZowiBendTones (400, 250, 1.04, 10, 0); 
+      ZowiBendTones (400, 250, 1.04, 10, 1); 
 
     if(buttonPushed){break;}
       ledmatrix.writeFull(dreamMouth[0]);
-      ZowiBendTones (250, 100, 1.04, 10, 0); 
+      ZowiBendTones (250, 100, 1.04, 10, 1); 
     
     delay(500);
   } 
@@ -1110,93 +1270,7 @@ void ZowiSleeping(){
   }
 
   zowi.home();
-  if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpenMouth]);}  
-}
-
-
-void ZowiSad(){
-
-  ledmatrix.writeFull(mouthType[sad]);
-  //int servoPos[4]={servo_YL, servo_YR, servo_RL, servo_RR}; 
-  int sadPos[4]={110, 70, 20, 160};
-  int Tm = 700;
-  
-
-  if(!buttonPushed){
-    zowi.moveServos(Tm, sadPos);     
-    ZowiBendTones(880, 830, 1.02, 20, 200);
-  }
-  
-  if(!buttonPushed){
-    ledmatrix.writeFull(mouthType[sadClosedMouth]);
-    ZowiBendTones(830, 790, 1.02, 20, 200);  
-  }
-
-  if(!buttonPushed){
-    ledmatrix.writeFull(mouthType[sadOpenMouth]);
-    ZowiBendTones(790, 740, 1.02, 20, 200);
-  }
-
-  if(!buttonPushed){
-    ledmatrix.writeFull(mouthType[sadClosedMouth]);
-    ZowiBendTones(740, 700, 1.02, 20, 200);
-  }
-
-  if(!buttonPushed){
-    ledmatrix.writeFull(mouthType[sadOpenMouth]);
-    ZowiBendTones(700, 669, 1.02, 20, 200);
-  }
-
-  if(!buttonPushed){
-    ledmatrix.writeFull(mouthType[sad]);
-    delay(500);
-  }  
-
-  zowi.home();
-  delay(300);
-
-  if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpenMouth]);}
-}
-
-
-void ZowiHappy(){
-
-  if(!buttonPushed){
-    ledmatrix.writeFull(mouthType[smile]);
-    S_happy_short();
-  }
-
-  if(!buttonPushed){  
-    zowi.swing(1,800,20); 
-  }
-  
-  if(!buttonPushed){  
-    S_happy_short();
-  }
-    
-  zowi.home();
-  if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpenMouth]);}   
-}
-
-
-void ZowiSuperHappy(){
-
-  if(!buttonPushed){  
-    ledmatrix.writeFull(mouthType[happyOpenMouth]);
-    S_happy();
-  }
-
-  if(!buttonPushed){  
-    zowi.updown(1, 400, 20);
-  }
-
-  if(!buttonPushed){
-    ledmatrix.writeFull(mouthType[smile]);
-    S_superHappy();
-  }
-    
-  zowi.home();  
-  if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpenMouth]);}
+  if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpen]);}  
 }
 
 
@@ -1254,7 +1328,7 @@ void ZowiFart(){
 
   zowi.home();
   delay(500);
-  if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpenMouth]);}
+  if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpen]);}
 }
 
 
@@ -1275,8 +1349,27 @@ void ZowiConfused(){
   delay(500);
   zowi.home();
 
-  if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpenMouth]);}
+  if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpen]);}
 }
+
+
+void ZowiLove(){
+
+    if(!buttonPushed){ledmatrix.writeFull(mouthType[heart]);}
+
+    S_cuddly();
+    //delay(200);
+
+    if(!buttonPushed){zowi.crusaito(1,1500,15,1);}
+    if(!buttonPushed){zowi.crusaito(1,1500,15,1);}
+
+    zowi.home();
+
+    if(!buttonPushed){
+      S_happy_short();
+      ledmatrix.writeFull(mouthType[happyOpen]);
+    }     
+}  
 
 
 void ZowiAngry(){
@@ -1312,33 +1405,35 @@ void ZowiAngry(){
   }
 
   zowi.home();
-  if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpenMouth]);} 
+  if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpen]);} 
 }
 
 
-void ZowiLove(){
+void ZowiFretful(){
 
-    if(!buttonPushed){ledmatrix.writeFull(mouthType[heart]);}
+  if(!buttonPushed){ledmatrix.writeFull(mouthType[angry]);}
 
+  int fretfulPos[4]={90, 90, 90, 110};
+  int Tm = 100;
+  
+  ZowiBendTones(note_A5, note_D6, 1.02, 20, 4);
+  ZowiBendTones(note_A5, note_E5, 1.02, 20, 4);
 
-    S_cuddly();
-    delay(200);
+  delay(300);
+  if(!buttonPushed){ledmatrix.writeFull(mouthType[lineMouth]);}
 
-    if(!buttonPushed){zowi.crusaito(1,1500,15,1);}
-    if(!buttonPushed){zowi.crusaito(1,1500,15,1);}
-
-
-
+  for(int i=0; i<4; i++){
+    zowi.moveServos(Tm, fretfulPos);   
     zowi.home();
+  }
 
-    if(!buttonPushed){
-      S_happy_short();
-      ledmatrix.writeFull(mouthType[happyOpenMouth]);
-    }     
-}  
+  if(!buttonPushed){ledmatrix.writeFull(mouthType[angry]);}
+  delay(500);
 
+  zowi.home();
+  if(!buttonPushed){ledmatrix.writeFull(mouthType[happyOpen]);} 
 
-
+}
 
 //Constant feedback of the sensors. F 1 = Feedback ON  F 0 = Feedback 0
 /*void sensorFeedback()
