@@ -14,3 +14,16 @@ int headRight[4]={40, 40, 90, 90};
 int leftBend[4]={90, 90, 58, 35};
 int rightBend[4]={90, 90, 180-35, 180-58};
 int bed[4]={90, 90, 20, 160};
+
+
+//Animatics poses 
+// int sadPos[4]={110, 70, 20, 160};
+// int bedPos[4]={100, 80, 40, 140};
+// int fartPos_1[4]={90, 90, 145, 122}; //rightBend
+// int fartPos_2[4]={90, 90, 80, 122};
+// int fartPos_3[4]={90, 90, 145, 80};
+// int confusedPos[4]={110, 70, 90, 90};
+// int angryPos[4]={90, 90, 70, 110};
+// int headLefttt[4]={110, 110, 90, 90};
+// int headRighttt[4]={70, 70, 90, 90};
+// int fretfulPos[4]={90, 90, 90, 110};

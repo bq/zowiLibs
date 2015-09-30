@@ -37,6 +37,7 @@ void Zowi::setTrims(int YL, int YR, int RL, int RR) {
 void Zowi::saveTrimsOnEEPROM() {
   for (int i = 0; i < 4; i++) 
       EEPROM.write(i, servo[i].getTrim());
+
 }
 
 void Zowi::moveServos(int time, int  servo_target[]) {
@@ -78,7 +79,7 @@ void Zowi::oscillateServos(int A[4], int O[4], int T, double phase_diff[4], floa
 
 void Zowi::_execute(int A[4], int O[4], int T, double phase_diff[4], float steps = 1.0)
 {
-  zowiBusy=true;
+  //zowiBusy=true;
 
   int cycles=(int)steps;    
 
@@ -90,7 +91,7 @@ void Zowi::_execute(int A[4], int O[4], int T, double phase_diff[4], float steps
   //-- Execute the final not complete cycle    
   oscillateServos(A,O, T, phase_diff,(float)steps-cycles);
 
-  zowiBusy=false;
+  //zowiBusy=false;
 }
 
 
@@ -100,8 +101,7 @@ void Zowi::_execute(int A[4], int O[4], int T, double phase_diff[4], float steps
 //--------------------------------
 void Zowi::homeold()
 {
-
-  zowiBusy=true;
+  //zowiBusy=true;
 
   //-- All the parameters are set to 0
   //-- If the amplitudes are 0, there are no oscillation
@@ -112,7 +112,7 @@ void Zowi::homeold()
   //-- Let's update the oscillators parameters!
   oscillateServos(A,O,500,phase_diff,1);
 
-  zowiBusy=false;
+  //zowiBusy=false;
 }
 
 //--------------------------------
@@ -346,20 +346,20 @@ void Zowi::shakeLeg (int steps,int T,int dir)
   int numberLegMoves=2;
 
   //Parameters of all the movements. Default: Right leg
-  int shake_leg1[4]={90, 90, 58, 35};   
-  int shake_leg2[4]={90, 90, 58, 120};
-  int shake_leg3[4]={90, 90, 58, 60};
+  int shake_leg1[4]={90, 90, 63, 35};   
+  int shake_leg2[4]={90, 90, 63, 120};
+  int shake_leg3[4]={90, 90, 63, 60};
   int homes[4]={90, 90, 90, 90};
 
   //Changes in the parameters if left leg is chosen
   if(dir==1)      
   {
     shake_leg1[2]=180-35;
-    shake_leg1[3]=180-58;
+    shake_leg1[3]=180-63;
     shake_leg2[2]=180-120;
-    shake_leg2[3]=180-58;
+    shake_leg2[3]=180-63;
     shake_leg3[2]=180-60;
-    shake_leg3[3]=180-58;
+    shake_leg3[3]=180-63;
   }
   
   //Time of the bend movement. Fixed parameter to avoid falls
@@ -399,8 +399,8 @@ void Zowi::shakeLeg (int steps,int T,int dir)
 void Zowi::bend (int steps, int T, int dir)
 {
   //Parameters of all the movements. Default: Left bend
-  int bend1[4]={90, 90, 58, 35};
-  int bend2[4]={90, 90, 58, 105};
+  int bend1[4]={90, 90, 63, 35};
+  int bend2[4]={90, 90, 63, 105};
   int homes[4]={90, 90, 90, 90};
   //Time of one bend, constrained in order to avoid movements too fast.
   T=max(T, 600);
@@ -409,9 +409,9 @@ void Zowi::bend (int steps, int T, int dir)
   if(dir==-1)
   {
     bend1[2]=180-35;
-    bend1[3]=180-58;
+    bend1[3]=180-63;
     bend2[2]=180-105;
-    bend2[3]=180-58;
+    bend2[3]=180-63;
   }
   //Bend movement
   for (int i=0;i<steps;i++)
@@ -479,7 +479,7 @@ void Zowi::ascendingTurn(float steps, int T, int h)
 
 
 
-bool Zowi::getStatus(){
+// bool Zowi::getStatus(){
 
-  return(zowiBusy);
-}
+//   return(zowiBusy);
+// }

@@ -22,7 +22,7 @@
 
 
 #define SERIALCOMMANDBUFFER 35  //16 after changed by me
-#define MAXSERIALCOMMANDS	10
+#define MAXSERIALCOMMANDS	14
 #define MAXDELIMETER 2
 
 class ZowiSerialCommand
