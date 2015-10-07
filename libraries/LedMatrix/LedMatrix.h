@@ -42,7 +42,7 @@ public:
 	// Functions              //
 	////////////////////////////
 	// LedMatrix -- LedMatrix class constructor
-	LedMatrix(char ser_pin=11, char clk_pin=12, char rck_pin=13);
+	LedMatrix(char ser_pin=11, char clk_pin=13, char rck_pin=12);
 		
 	// writeFull
 	void writeFull(unsigned long value);
