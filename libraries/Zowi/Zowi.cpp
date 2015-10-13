@@ -1,3 +1,4 @@
+
 #if defined(ARDUINO) && ARDUINO >= 100
   #include "Arduino.h"
 #else
@@ -16,6 +17,7 @@
 // }
 
 void Zowi::init(int YL, int YR, int RL, int RR, bool load_calibration, int NoiseSensor, int Buzzer, int USTrigger, int USEcho) {
+  
   servo[0].attach(YL);
   servo[1].attach(YR);
   servo[2].attach(RL);
@@ -40,9 +42,8 @@ void Zowi::init(int YL, int YR, int RL, int RR, bool load_calibration, int Noise
 
   pinMode(Buzzer,OUTPUT);
   pinMode(NoiseSensor,INPUT);
-
-
 }
+
 
 void Zowi::setTrims(int YL, int YR, int RL, int RR) {
   servo[0].SetTrim(YL);
@@ -93,9 +94,7 @@ void Zowi::oscillateServos(int A[4], int O[4], int T, double phase_diff[4], floa
 
 }
 
-void Zowi::_execute(int A[4], int O[4], int T, double phase_diff[4], float steps = 1.0)
-{
-  //zowiBusy=true;
+void Zowi::_execute(int A[4], int O[4], int T, double phase_diff[4], float steps = 1.0){
 
   int cycles=(int)steps;    
 
@@ -107,44 +106,24 @@ void Zowi::_execute(int A[4], int O[4], int T, double phase_diff[4], float steps
   //-- Execute the final not complete cycle    
   oscillateServos(A,O, T, phase_diff,(float)steps-cycles);
 
-  //zowiBusy=false;
 }
 
 
-
-//--------------------------------
-//-- Zowi at rest position OLD
-//--------------------------------
-void Zowi::homeold()
-{
-  //zowiBusy=true;
-
-  //-- All the parameters are set to 0
-  //-- If the amplitudes are 0, there are no oscillation
-  int A[4]= {0, 0, 0, 0};
-  int O[4] = {0, 0, 0, 0};
-  double phase_diff[4] = {0, 0, 0, 0};
-  
-  //-- Let's update the oscillators parameters!
-  oscillateServos(A,O,500,phase_diff,1);
-
-  //zowiBusy=false;
-}
 
 //--------------------------------
 //-- Zowi at rest position
 //--------------------------------
-void Zowi::home()
-{
+void Zowi::home(){
+
   int homes[4]={90, 90, 90, 90}; //All the servos at rest position
   moveServos(500,homes);   //Move the servos in half a second
   
 }
 
 
-//***********************************************************************************
-//*********************************MOVEMENTS*****************************************
-//***********************************************************************************
+//**************************************************
+//** MOVEMENTS *************************************
+//**************************************************
 
 //------------------------------------------------
 //-- Zowi gait: Walking  (forward or backward)    
@@ -153,8 +132,8 @@ void Zowi::home()
 //--    * T : Period
 //--    * Dir: Direction: FORWARD / BACKWARD
 //------------------------------------------------
-void Zowi::walk(float steps, int T, int dir)
-{
+void Zowi::walk(float steps, int T, int dir){
+
   //-- Oscillator parameters for walking
   //-- Hip sevos are in phase
   //-- Feet servos are in phase
@@ -177,8 +156,8 @@ void Zowi::walk(float steps, int T, int dir)
 //--   * T: Period
 //--   * Dir: Direction: LEFT / RIGHT
 //-----------------------------------------------------
-void Zowi::turn(float steps, int T, int dir)
-{
+void Zowi::turn(float steps, int T, int dir){
+
   //-- Same coordination than for walking (see Zowi::walk)
   //-- The Amplitudes of the hip's oscillators are not igual
   //-- When the right hip servo amplitude is higher, the steps taken by
@@ -212,8 +191,8 @@ void Zowi::turn(float steps, int T, int dir)
 //--    * h: Jump height: SMALL / MEDIUM / BIG 
 //--              (or a number in degrees 0 - 90)
 //----------------------------------------------------- 
-void Zowi::updown(float steps, int T, int h)
-{
+void Zowi::updown(float steps, int T, int h){
+
   //-- Both feet are 180 degrees out of phase
   //-- Feet amplitude and offset are the same
   //-- Initial phase for the right foot is -90, so that it starts
@@ -236,8 +215,8 @@ void Zowi::updown(float steps, int T, int h)
 //--    h: Height. Typical valures between 15 and 40
 //--    dir: Direction: LEFT / RIGHT
 //------------------------------------------------------------------
-void Zowi::moonwalker(float steps, int T, int h, int dir)
-{
+void Zowi::moonwalker(float steps, int T, int h, int dir){
+
   //-- This motion is similar to that of the caterpillar robots: A travelling
   //-- wave moving from one side to another
   //-- The two Zowi's feet are equivalent to a minimal configuration. It is known
@@ -265,8 +244,7 @@ void Zowi::moonwalker(float steps, int T, int h, int dir)
 //--     T : Period
 //--     h : Amount of swing (from 0 to 50 aprox)
 //-----------------------------------------------------------
-void Zowi::swing(float steps, int T, int h)
-{
+void Zowi::swing(float steps, int T, int h){
 
   //-- Both feets are in phase. The offset is half the amplitude
   //-- It causes the robot to swing from side to side
@@ -286,8 +264,8 @@ void Zowi::swing(float steps, int T, int h)
 //--     T : Period
 //--     h : Amount of swing (from 0 to 50 aprox)
 //-----------------------------------------------------------
-void Zowi::tiptoeSwing(float steps, int T, int h)
-{
+void Zowi::tiptoeSwing(float steps, int T, int h){
+
   //-- Both feets are in phase. The offset is not half the amplitude in order to tiptoe
   //-- It causes the robot to swing from side to side
   int A[4]= {0, 0, h, h};
@@ -298,9 +276,6 @@ void Zowi::tiptoeSwing(float steps, int T, int h)
   _execute(A, O, T, phase_diff, steps); 
 }
 
-
-
-
 //-----------------------------------------------------------------
 //-- Zowi gait: Crusaito: a mixture between moonwalker and walk
 //--
@@ -310,8 +285,8 @@ void Zowi::tiptoeSwing(float steps, int T, int h)
 //--     h: height (Values between 20 - 50)
 //--     dir:  Direction: LEFT / RIGHT
 //------------------------------------------------------------------
-void Zowi::crusaito(float steps, int T, int h, int dir)
-{
+void Zowi::crusaito(float steps, int T, int h, int dir){
+
   int A[4]= {25, 25, h, h};
   int O[4] = {0, 0, h/2+ 4, -h/2 - 4};
   double phase_diff[4] = {90, 90, DEG2RAD(0), DEG2RAD(-60 * dir)};
@@ -320,7 +295,16 @@ void Zowi::crusaito(float steps, int T, int h, int dir)
   _execute(A, O, T, phase_diff, steps); 
 }
 
+
+//-----------------------------------------------------
+//-- Zowi movement: Jump
+//--
+//--  Parameters:
+//--    steps: Number of steps
+//--    T: Period
+//------------------------------------------------------
 void Zowi::jump(float steps, int T){
+
   int up[]={90,90,150,30};
   moveServos(T,up);
   int down[]={90,90,90,90};
@@ -336,8 +320,8 @@ void Zowi::jump(float steps, int T){
 //--    h: height (Values between 10 - 30)
 //--    dir: direction: FOREWARD, BACKWARD
 //------------------------------------------------------
-void Zowi::flapping(float steps, int T, int h, int dir)
-{
+void Zowi::flapping(float steps, int T, int h, int dir){
+
   int A[4]= {12, 12, h, h};
   int O[4] = {0, 0, h - 10, -h + 10};
   double phase_diff[4] = {DEG2RAD(0), DEG2RAD(180), DEG2RAD(-90 * dir), DEG2RAD(90 * dir)};
@@ -345,7 +329,6 @@ void Zowi::flapping(float steps, int T, int h, int dir)
   //-- Let's oscillate the servos!
   _execute(A, O, T, phase_diff, steps); 
 }
-
 
 //-----------------------------------------------------
 //-- Zowi gait: Shake a leg
@@ -355,8 +338,7 @@ void Zowi::flapping(float steps, int T, int h, int dir)
 //--    T: Period of one shake
 //--    dir: RIGHT=Right leg LEFT=Left leg
 //------------------------------------------------------
-void Zowi::shakeLeg (int steps,int T,int dir)
-{
+void Zowi::shakeLeg (int steps,int T,int dir){
 
   //This variable change the amount of shakes
   int numberLegMoves=2;
@@ -396,11 +378,9 @@ void Zowi::shakeLeg (int steps,int T,int dir)
     moveServos(T/(2*numberLegMoves),shake_leg3);
     moveServos(T/(2*numberLegMoves),shake_leg2);
     }
-    moveServos(500,homes);
+    moveServos(500,homes); //Return to home position
   }
   delay(T);
-  //Return to home position
- 
 }
 
 //-----------------------------------------------------
@@ -412,8 +392,8 @@ void Zowi::shakeLeg (int steps,int T,int dir)
 //--    dir: RIGHT=Right bend LEFT=Left bend
 //------------------------------------------------------
 
-void Zowi::bend (int steps, int T, int dir)
-{
+void Zowi::bend (int steps, int T, int dir){
+
   //Parameters of all the movements. Default: Left bend
   int bend1[4]={90, 90, 58, 35};
   int bend2[4]={90, 90, 58, 105};
@@ -440,7 +420,6 @@ void Zowi::bend (int steps, int T, int dir)
 
 }
 
-
 //-----------------------------------------------------
 //-- Zowi gait: Jitter 
 //--
@@ -450,8 +429,8 @@ void Zowi::bend (int steps, int T, int dir)
 //--    h: height (Values between 5 - 25)   
 //------------------------------------------------------
 
-void Zowi::jitter(float steps, int T, int h)
-{
+void Zowi::jitter(float steps, int T, int h){
+
   //-- Both feet are 180 degrees out of phase
   //-- Feet amplitude and offset are the same
   //-- Initial phase for the right foot is -90, so that it starts
@@ -464,9 +443,6 @@ void Zowi::jitter(float steps, int T, int h)
   
   //-- Let's oscillate the servos!
   oscillateServos(A, O, T, phase_diff, steps); 
-
-
-
 }
 
 
@@ -478,8 +454,8 @@ void Zowi::jitter(float steps, int T, int h)
 //--    T: Period of one bend
 //--    h: height (Values between 5 - 15) 
 //------------------------------------------------------
-void Zowi::ascendingTurn(float steps, int T, int h)
-{
+void Zowi::ascendingTurn(float steps, int T, int h){
+
   //-- Both feet and legs are 180 degrees out of phase
   //-- Initial phase for the right foot is -90, so that it starts
   //--   in one extreme position (not in the middle)
@@ -494,24 +470,79 @@ void Zowi::ascendingTurn(float steps, int T, int h)
 }
 
 
+
+//**************************************************
+//** SENSORS ***************************************
+//**************************************************
+
 //-----------------------------------------------------
 //-- Zowi getDistance: return zowi's ultrasonic sensor measure
 //------------------------------------------------------
-float Zowi::getDistance()
-{
+float Zowi::getDistance(){
   return us.read();
 }
 
-
 //-----------------------------------------------------
-//-- Zowi getDistance: return zowi's ultrasonic sensor measure
+//-- Zowi getNoise: return zowi's noise sensor measure
 //------------------------------------------------------
-float Zowi::getNoise()
-{
-  return analogRead(pinNoiseSensor);
+int Zowi::getNoise(){
+
+  int noiseLevel = 0;
+  int noiseReadings = 0;
+  int numReadings = 2;
+
+    for(int i=0; i<numReadings; i++){
+        noiseReadings += analogRead(pinNoiseSensor);
+        delay(2); // delay in between reads for stability
+    }
+
+    noiseLevel = noiseReadings / numReadings;
+
+    return noiseLevel;
 }
 
 
+//-----------------------------------------------------
+//-- Zowi getBatteryLevel: return battery voltage percent
+//------------------------------------------------------
+double Zowi::getBatteryLevel(){
+
+  //The first read of the batery is often a wrong reading, so we will discard this value. 
+    double batteryLevel = battery.readBatPercent();
+    double batteryReadings = 0;
+    int numReadings = 10;
+
+    for(int i=0; i<numReadings; i++){
+        batteryReadings += battery.readBatPercent();
+        delay(1); // delay in between reads for stability
+    }
+
+    batteryLevel = batteryReadings / numReadings;
+
+    return batteryLevel;
+}
+
+double Zowi::getBatteryVoltage(){
+
+  //The first read of the batery is often a wrong reading, so we will discard this value. 
+    double batteryLevel = battery.readBatVoltage();
+    double batteryReadings = 0;
+    int numReadings = 10;
+
+    for(int i=0; i<numReadings; i++){
+        batteryReadings += battery.readBatVoltage();
+        delay(1); // delay in between reads for stability
+    }
+
+    batteryLevel = batteryReadings / numReadings;
+
+    return batteryLevel;
+}
+
+
+//**************************************************
+//** MOUTHS & ANIMATIONS ***************************
+//**************************************************
 
 unsigned long int Zowi::getMouthShape(int number){
   unsigned long int types []={zero_code,one_code,two_code,three_code,four_code,five_code,six_code,seven_code,eight_code,
@@ -584,13 +615,14 @@ unsigned long int Zowi::getAnimShape(int anim, int index){
   
 }
 
-void Zowi::putAnimationMouth(unsigned long int aniMouth, int index)
-{
+void Zowi::putAnimationMouth(unsigned long int aniMouth, int index){
+
       ledmatrix.writeFull(Zowi::getAnimShape(aniMouth,index));
 }
 
-void Zowi::putMouth(unsigned long int mouth, bool predefined)
-{
+
+void Zowi::putMouth(unsigned long int mouth, bool predefined){
+
   if (predefined){
     ledmatrix.writeFull(Zowi::getMouthShape(mouth));
   }
@@ -599,15 +631,19 @@ void Zowi::putMouth(unsigned long int mouth, bool predefined)
   }
 }
 
-void Zowi::clearMouth ()
-{
+
+void Zowi::clearMouth(){
+
   ledmatrix.clearMatrix();
 }
 
 
-/*** TONE FUNCTIONS ***/
-void Zowi::_tone (float noteFrequency, long noteDuration, int silentDuration)
-{
+//**************************************************
+//** SOUNDS ****************************************
+//**************************************************
+
+void Zowi::_tone (float noteFrequency, long noteDuration, int silentDuration){
+
     // tone(10,261,500);
     // delay(500);
 
@@ -618,8 +654,8 @@ void Zowi::_tone (float noteFrequency, long noteDuration, int silentDuration)
 }
 
 
-void Zowi::bendTones (float initFrequency, float finalFrequency, float prop, long noteDuration, int silentDuration)
-{
+void Zowi::bendTones (float initFrequency, float finalFrequency, float prop, long noteDuration, int silentDuration){
+
   //Examples:
   //  bendTones (880, 2093, 1.02, 18, 0);
   //  bendTones (note_A5, note_C7, 1.02, 18, 0);
@@ -753,25 +789,11 @@ void Zowi::sing(int songName){
 
 }
 
-double Zowi::getBatteryLevel(){
-
-  //The first read of the batery is often a wrong reading, so we will discard this value. 
-    double batteryLevel = battery.readBatPercent();
-    double batteryReadings = 0;
-    int numReadings = 10;
-
-    for(int i=0; i<numReadings; i++){
-        batteryReadings += battery.readBatPercent();
-        delay(1); // delay in between reads for stability
-    }
-
-    batteryLevel = batteryReadings / numReadings;
-
-    return batteryLevel;
-
-}
 
 
+//**************************************************
+//** GESTURES **************************************
+//**************************************************
 
 void Zowi::playGesture(int gesture){
 

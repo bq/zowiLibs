@@ -23,7 +23,7 @@ long US::TP_init()
     digitalWrite(_pinTrigger, HIGH);
     delayMicroseconds(10);
     digitalWrite(_pinTrigger, LOW);
-    long microseconds = pulseIn(_pinEcho,HIGH,40000);
+    long microseconds = pulseIn(_pinEcho,HIGH,40000); //40000
     return microseconds;
 }
 

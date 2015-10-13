@@ -24,10 +24,8 @@
 #define BIG         30
 
 #define PIN_Buzzer  10
-
 #define PIN_Trigger 8
 #define PIN_Echo    9
-
 #define PIN_NoiseSensor A6
 
 
@@ -37,9 +35,11 @@ class Zowi
 
     //Zowi (int YL=2, int YR=3, int RL=4, int RR=5, int NoiseSensor = A6, int Buzzer = 10, int SecondButton=6, int ThirdButton=7, int USTrigger=8, int USEcho=9,bool load_calibration=true);
     void init(int YL, int YR, int RL, int RR, bool load_calibration=true, int NoiseSensor=PIN_NoiseSensor, int Buzzer=PIN_Buzzer, int USTrigger=PIN_Trigger, int USEcho=PIN_Echo);
+
     void setTrims(int YL, int YR, int RL, int RR);
     void saveTrimsOnEEPROM();
-    
+
+    //-- Motion functions
     void moveServos(int time, int  servo_target[]);
     void oscillateServos(int A[4], int O[4], int T, double phase_diff[4], float cycle);
     
@@ -63,38 +63,40 @@ class Zowi
     void crusaito(float steps=1, int T=900, int h=20, int dir=FORWARD);
     void flapping(float steps=1, int T=1000, int h=20, int dir=FORWARD);
 
-    //US
+    //-- US
     float getDistance();
 
-    //Noise Sensor
-    float getNoise();
+    //-- Noise Sensor
+    int getNoise();
+
+    //-- Battery
+    double getBatteryLevel();
+    double getBatteryVoltage();
     
-    //Mouth
+    //-- Mouth
     void putMouth(unsigned long int mouth, bool predefined = true);
     void putAnimationMouth(unsigned long int anim, int index);
     void clearMouth();
 
-    //Sounds
+    //-- Sounds
     void _tone (float noteFrequency, long noteDuration, int silentDuration);
     void bendTones (float initFrequency, float finalFrequency, float prop, long noteDuration, int silentDuration);
     void sing(int songName);
 
-    //Gestures
+    //-- Gestures
     void playGesture(int gesture);
 
-    //Battery
-    double getBatteryLevel();
 
-    
+
  
   private:
     
     //ZowiSerialCommand SCmd;  // SerialCommand object
+    LedMatrix ledmatrix;
     BatReader battery;
     Oscillator servo[4];
     US us;
-    LedMatrix ledmatrix;
-
+    
     int servo_trim[4];
     int servo_position[4];
     int pinBuzzer;

@@ -15,21 +15,13 @@
 #include <Servo.h>
 #include <Oscillator.h>
 #include <EEPROM.h>
-#include <ZowiSerialCommand.h>
 #include <EnableInterrupt.h> //Library to manage external interruptions
-
-ZowiSerialCommand SCmd;  // The demo SerialCommand object
-
-
-//---Zowi Led Array Mouth
+#include <BatReader.h>
+#include <US.h>
 #include <LedMatrix.h>
 
-//---Zowi Battery reader library
-#include <BatReader.h>
-//BatReader battery;
-
-#include <US.h>
-
+#include <ZowiSerialCommand.h>
+ZowiSerialCommand SCmd;  //The SerialCommand object
 
 
 //-- First step: Configure the pins where the servos are attached
@@ -47,46 +39,47 @@ ZowiSerialCommand SCmd;  // The demo SerialCommand object
           -----   ------
           */
 
-           #define PIN_YL 2 //servo[0]
-           #define PIN_YR 3 //servo[1]
-           #define PIN_RL 4 //servo[2]
-           #define PIN_RR 5 //servo[3]
+    #define PIN_YL 2 //servo[0]
+    #define PIN_YR 3 //servo[1]
+    #define PIN_RL 4 //servo[2]
+    #define PIN_RR 5 //servo[3]
           
 //-- Zowi Library
 #include <Zowi.h>
 
 Zowi zowi;  //-- This is Zowi!!          
 
-
 //---Zowi Buttons
 #define PIN_SecondButton 6
 #define PIN_ThirdButton 7
-
 
 
 ////////////////////////////
 // Global Variables       //
 ////////////////////////////
 
-char programID[]="ZOWI_BASE_v0"; //Each program will have a ID in order to 
+const char programID[]="ZOWI_BASE_v0"; //Each program will have a ID
 
 const char name_fac='$'; //Factory name
 const char name_fir='#'; //First name
 
-int T=1000; //Initial duration of movement
-int moveId=0; //Number of movement
-int endmove=1; // 1= stop 0= moving
-int moveSize=15; //Many movements accept a moveSize parameter asociated with the height of that movement
+//-- Movement parameters
+int T=1000;       //Initial duration of movement
+int moveId=0;     //Number of movement
+int endmove=1;    // 1= stop 0= moving
+int moveSize=15;  //Many movements accept a moveSize parameter asociated with the height of that movement
 
 volatile int state=0; //State of zowi state machine
 volatile bool buttonPushed=false;  //Variable to remember when a button has been pushed
 volatile bool buttonAPushed=false; //Variable to remember when A button has been pushed
 volatile bool buttonBPushed=false; //Variable to remember when B button has been pushed
+
 unsigned long previousMillis=0;
 
 int randomDance=0;
 int randomSteps=0;
 
+bool obstacleDetected = false;
 
 
 ////////////////////////////
@@ -102,7 +95,7 @@ void setup() {
   pinMode(PIN_ThirdButton,INPUT);
   
   //Set the servo pins
-  zowi.init(PIN_YL,PIN_YR,PIN_RL,PIN_RR);
+  zowi.init(PIN_YL,PIN_YR,PIN_RL,PIN_RR,true);
  
  //Uncomment this to set the servo trims manually and save on EEPROM 
   //zowi.setTrims(TRIM_YL, TRIM_YR, TRIM_RL, TRIM_RR);
@@ -117,7 +110,7 @@ void setup() {
   enableInterrupt(PIN_ThirdButton, thirdButtonPushed, RISING);
 
   //Setup callbacks for SerialCommand commands 
-  SCmd.addCommand("S", stopp);            //  sendAck();
+  SCmd.addCommand("S", receiveStop);      //  sendAck();
   SCmd.addCommand("L", receiveLED);       //  sendAck();
   SCmd.addCommand("T", recieveBuzzer);    //  sendAck();
   SCmd.addCommand("M", receiveMovement);  //  sendAck();
@@ -130,7 +123,8 @@ void setup() {
   SCmd.addCommand("N", requestNoise);
   SCmd.addCommand("B", requestBattery);
   SCmd.addCommand("I", requestProgramId);
-  SCmd.addDefaultHandler(stopp);
+  SCmd.addDefaultHandler(receiveStop);
+
 
   zowi.sing(S_connection);
   zowi.home();
@@ -142,6 +136,7 @@ void setup() {
   if (EEPROM.read(5)==name_fac){ 
 
     EEPROM.put(5, name_fir); //From now, the name is '#'
+    EEPROM.put(6, '\0'); 
     zowi.putMouth(culito);
 
     while(true){    
@@ -162,7 +157,7 @@ void setup() {
  //--
  // Zowi wake up! A little moment of initial surprise
  //--
- //Animation uuuh
+ //Animation Uuuuuh
   for(int i=0; i<2; i++){
       for (int i=0;i<8;i++){  //i<(sizeof(littleUuh)/sizeof(unsigned long int)) 
         if(buttonPushed){break;}  
@@ -265,11 +260,9 @@ void loop() {
       //MODE 0 - Zowi Wait
       case 0:
       
-        if (millis()-previousMillis>=80000)   
-        {
-          ZowiSleeping_withInterrupts();  //Zowi se duerme!! 
-
-          previousMillis=millis();         
+        if (millis()-previousMillis>=80000){
+            ZowiSleeping_withInterrupts();  //Zowi se duerme!! 
+            previousMillis=millis();         
         }
 
         break;
@@ -280,73 +273,127 @@ void loop() {
         
         randomDance=random(5,21); //5,20
         if((randomDance>14)&&(randomDance<19)){
-              randomSteps=1;
-              T=1600;
+            randomSteps=1;
+            T=1600;
         }
         else{
-              randomSteps=random(3,6);  //3,5
-              T=1000;
+            randomSteps=random(3,6);  //3,5
+            T=1000;
         }
         
         zowi.putMouth(random(10,21));
 
-        for (int i=0;i<randomSteps;i++)
-        {
-          move(randomDance);
-          if(buttonPushed){break;}
+        for (int i=0;i<randomSteps;i++){
+            move(randomDance);
+            if(buttonPushed){break;}
         }
         break;
+
+
+
 
 
       //MODE 2 - Obstacle detector mode
       case 2:
 
-        if (zowi.getDistance()<=15)
-        {
-          if(!buttonPushed){
-            zowi.putMouth(bigSurprise);
-            zowi.sing(S_surprise);
-          }
+        //ACTUALIZO OBST Var
+        obstacleDetector();
+        //Serial.println("Mido primera:");
 
-          if(!buttonPushed){
-            zowi.jump(5, 500);
-          }  
+        if(obstacleDetected){
 
-          if(!buttonPushed){
-            zowi.putMouth(confused);
-            zowi.sing(S_cuddly);
-          }  
+            if(!buttonPushed){
+              zowi.putMouth(bigSurprise);
+              zowi.sing(S_surprise);
+              zowi.jump(5, 500);
+            }  
 
-          //Zowi takes two steps back
-          for(int i=0;i<3;i++){ 
-            if(buttonPushed){break;}
-            zowi.walk(1,1300,-1);
-          }
+            if(!buttonPushed){
+              zowi.putMouth(confused);
+              zowi.sing(S_cuddly);
+            }  
 
-          if(!buttonPushed){
-            zowi.putMouth(smile);
-            zowi.sing(S_happy_short); 
-          }
+            //Zowi takes two steps back
+            for(int i=0;i<3;i++){ 
+              if(buttonPushed){break;}
+              zowi.walk(1,1300,-1);
+            }
 
-          //Zowi turn right
-          for(int i=0;i<3;i++){ 
-            if(buttonPushed){break;}
-            zowi.turn(1,1300,1);
-          }
+            //delay(1000);
+            //zowi.home();
+            delay(100);
 
-          if(!buttonPushed){zowi.putMouth(happyOpen);} 
-          
+
+            //ACTUALIZO OBST Var
+            obstacleDetector();
+
+            delay(100);
+            //Serial.println("Mido durante:");    
+            //Serial.println(obstacleDetected);
+            //delay(100);
+
+
+
+            //Si no hay OBSt o no he pulsado Boton giro IZQ
+           if((obstacleDetected==true)||(buttonPushed==true)){break;}            
+           else{
+              zowi.putMouth(smile);
+              //zowi.sing(S_happy_short); 
+              delay(50);
+              obstacleDetector();
+           } 
+            
+           
+            //Si no hay OBSt o no he pulsado Boton giro IZQ
+           if((obstacleDetected==true)||(buttonPushed==true)){break;}            
+            else{ 
+              zowi.turn(1,1000,1); 
+              delay(50);
+              obstacleDetector();
+              //delay(50);
+              
+            } 
+
+             
+           //Si no hay OBSt o no he pulsado Boton giro IZQ
+           if((obstacleDetected==true)||(buttonPushed==true)){break;}            
+            else{ 
+              zowi.turn(1,1000,1); 
+              delay(50);
+              obstacleDetector();
+              //delay(50);
+            }
+
+            //Si no hay OBSt o no he pulsado Boton giro IZQ
+           if((obstacleDetected==true)||(buttonPushed==true)){break;}            
+            else{ 
+              zowi.turn(1,1000,1); 
+              delay(50);
+              obstacleDetector();
+              //delay(50);
+            }
+
+            
+            //Si no hay OBSt o no he pulsado Boton PONGO FELIZ
+            if((obstacleDetected==true)||(buttonPushed==true)){break;}           
+            else{
+                zowi.home();
+                zowi.putMouth(happyOpen);
+                zowi.sing(S_happy_short);
+                delay(200);
+            }     
+        
+
         }else{
             zowi.walk(1,1000,1); //Zowi walk straight
-        }  
+        }   
 
         break;
 
 
       //MODE 3 - Noise sensor mode  
       case 3:
-        if (zowi.getNoise()>=770) //740
-        {
+        if (zowi.getNoise()>=740){ //740
           
           delay(50);  //Wait for the possible 'lag' of the button interruptions. 
                       //Sometimes, the noise sensor detect the button before the interruption takes efect 
@@ -360,7 +407,7 @@ void loop() {
             zowi.putMouth(random(10,21));
             move(random(1,20));
             zowi.home();
-            delay(50); //Wait for possible noise of the servos while get home
+            delay(200); //Wait for possible noise of the servos while get home
           }
           
           if(!buttonPushed){zowi.putMouth(happyOpen);}
@@ -372,8 +419,8 @@ void loop() {
       case 4:
 
         SCmd.readSerial();
-        if (endmove==0) 
-        {
+
+        if (endmove==0){
           move(moveId);
         }
       
@@ -421,26 +468,21 @@ void thirdButtonPushed(){
 
 
 void obstacleDetector(){
-  if (zowi.getDistance()<=15)  //15cm
-        { 
-          zowi.putMouth(bigSurprise);
-          zowi.sing(S_surprise);
-          zowi.jump(5, 500);
+   //ACTUALIZO OBST Var
+   int distance = zowi.getDistance();
 
-          if(!buttonPushed)
-          {
-            zowi.putMouth(confused);
-            for(int i=0;i<3;i++)
-            {
-              if(buttonPushed){break;}
-              zowi.walk(1,1000,-1);
-            } 
-          }
+        if(distance<15){
+          obstacleDetected = true;
+        }else{
+          obstacleDetected = false;
         }
+
 }
 
+
+
 //Function to receive stop commands. 'stop' is a reserved word.
-void stopp(){
+void receiveStop(){
 
     sendAck();
 
@@ -451,7 +493,7 @@ void stopp(){
 //Function to receive LED commands
 void receiveLED(){  
 
-    stopp(); //stop and sendAck
+    receiveStop(); //stop and sendAck
 
     //Examples of receiveLED Bluetooth commands
     //L 00000000100001010010001100000000
@@ -474,7 +516,7 @@ void receiveLED(){
 //Function to receive buzzer commands
 void recieveBuzzer(){
   
-    stopp(); //stop and sendAck
+    receiveStop(); //stop and sendAck
 
     bool error = false; 
     int frec;
@@ -757,7 +799,7 @@ void receiveGesture(){
 
 void receiveName(){
 
-    stopp(); //stop and sendAck
+    receiveStop(); //stop and sendAck
 
     char newZowiName[11] = "";  //Variable to store data read from Serial.
     int eeAddress = 5;          //Location we want the data to be in EEPROM.
@@ -875,7 +917,7 @@ void ZowiLowBatteryAlarm(){
     }
 }
 
-void ZowiSleeping_withInterrupts(){ //With Interrupts:
+void ZowiSleeping_withInterrupts(){
 
   int bedPos_0[4]={100, 80, 40, 140};
 
