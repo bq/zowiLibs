@@ -36,6 +36,9 @@ class Zowi
     //Zowi (int YL=2, int YR=3, int RL=4, int RR=5, int NoiseSensor = A6, int Buzzer = 10, int SecondButton=6, int ThirdButton=7, int USTrigger=8, int USEcho=9,bool load_calibration=true);
     void init(int YL, int YR, int RL, int RR, bool load_calibration=true, int NoiseSensor=PIN_NoiseSensor, int Buzzer=PIN_Buzzer, int USTrigger=PIN_Trigger, int USEcho=PIN_Echo);
 
+    void attachServos();
+    void detachServos();
+
     void setTrims(int YL, int YR, int RL, int RR);
     void saveTrimsOnEEPROM();
 
@@ -96,7 +99,8 @@ class Zowi
     BatReader battery;
     Oscillator servo[4];
     US us;
-    
+
+    int servo_pins[4];
     int servo_trim[4];
     int servo_position[4];
     int pinBuzzer;

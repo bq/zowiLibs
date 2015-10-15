@@ -5,9 +5,9 @@
 //-- October 2015
 //-- Authors:  Anita de Prado: ana.deprado@bq.com
 //--           Jose Alberca:   jose.alberca@bq.com
-//--           Irene Sanz : irene.sanz@bq.com
 //--           Javier Isabel:  javier.isabel@bq.com
 //--           Juan Gonzalez (obijuan): juan.gonzalez@bq.com
+//--           Irene Sanz : irene.sanz@bq.com
 //-----------------------------------------------------------------
 //-- Experiment with all the features that Zowi have!
 //-----------------------------------------------------------------
@@ -146,9 +146,11 @@ void setup() {
 
   //--Send Zowi name, programID & battery level by bluetooth.
   requestName();
+  delay(50);
   requestProgramId();
+  delay(50);
   requestBattery();
-
+  
 
   //Checking battery
   ZowiLowBatteryAlarm();
@@ -432,7 +434,7 @@ void loop() {
         
     }
 
-  }
+  } 
 
 }  
 
@@ -731,6 +733,7 @@ void move(int moveId){
       default:
         break;
     }
+    
 }
 
 

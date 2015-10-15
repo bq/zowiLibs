@@ -18,10 +18,12 @@
 
 void Zowi::init(int YL, int YR, int RL, int RR, bool load_calibration, int NoiseSensor, int Buzzer, int USTrigger, int USEcho) {
   
-  servo[0].attach(YL);
-  servo[1].attach(YR);
-  servo[2].attach(RL);
-  servo[3].attach(RR);
+  Zowi::servo_pins[0] = YL;
+  Zowi::servo_pins[1] = YR;
+  Zowi::servo_pins[2] = RL;
+  Zowi::servo_pins[3] = RR;
+
+  attachServos();
 
   if (load_calibration) {
     for (int i = 0; i < 4; i++) {
@@ -42,8 +44,22 @@ void Zowi::init(int YL, int YR, int RL, int RR, bool load_calibration, int Noise
 
   pinMode(Buzzer,OUTPUT);
   pinMode(NoiseSensor,INPUT);
+
 }
 
+void Zowi::attachServos(){
+    servo[0].attach(servo_pins[0]);
+    servo[1].attach(servo_pins[1]);
+    servo[2].attach(servo_pins[2]);
+    servo[3].attach(servo_pins[3]);
+}
+
+void Zowi::detachServos(){
+    servo[0].detach();
+    servo[1].detach();
+    servo[2].detach();
+    servo[3].detach();
+}
 
 void Zowi::setTrims(int YL, int YR, int RL, int RR) {
   servo[0].SetTrim(YL);
@@ -58,6 +74,8 @@ void Zowi::saveTrimsOnEEPROM() {
 }
 
 void Zowi::moveServos(int time, int  servo_target[]) {
+
+  attachServos();
 
   if(time>10){
     for (int i = 0; i < 4; i++) increment[i] = ((servo_target[i]) - servo_position[i]) / (time / 10.0);
@@ -96,6 +114,8 @@ void Zowi::oscillateServos(int A[4], int O[4], int T, double phase_diff[4], floa
 
 void Zowi::_execute(int A[4], int O[4], int T, double phase_diff[4], float steps = 1.0){
 
+  attachServos();
+
   int cycles=(int)steps;    
 
   //-- Execute complete cycles
@@ -117,6 +137,8 @@ void Zowi::home(){
 
   int homes[4]={90, 90, 90, 90}; //All the servos at rest position
   moveServos(500,homes);   //Move the servos in half a second
+
+  detachServos();
   
 }
 

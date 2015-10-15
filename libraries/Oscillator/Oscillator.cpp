@@ -38,27 +38,41 @@ bool Oscillator::next_sample()
 //-- is connected
 void Oscillator::attach(int pin, bool rev)
 {
-  //-- Attach the servo and move it to the home position
-  _servo.attach(pin);
-  _servo.write(90);
-  
-  //-- Initialization of oscilaltor parameters
-  _TS=30;
-  _T=2000;
-  _N = _T/_TS;
-  _inc = 2*M_PI/_N;
-  
-  _previousMillis=0;
-  
-  //-- Default parameters
-  _A=45;
-  _phase=0;
-  _phase0=0;
-  _O=0;
-  _stop=false;
+  //-- If the oscillator is detached, attach it.
+  if(!_servo.attached()){
 
-  //-- Reverse mode
-  _rev = rev;
+    //-- Attach the servo and move it to the home position
+      _servo.attach(pin);
+      _servo.write(90);
+
+      //-- Initialization of oscilaltor parameters
+      _TS=30;
+      _T=2000;
+      _N = _T/_TS;
+      _inc = 2*M_PI/_N;
+
+      _previousMillis=0;
+
+      //-- Default parameters
+      _A=45;
+      _phase=0;
+      _phase0=0;
+      _O=0;
+      _stop=false;
+
+      //-- Reverse mode
+      _rev = rev;
+  }
+      
+}
+
+//-- Detach an oscillator from his servo
+void Oscillator::detach()
+{
+   //-- If the oscillator is attached, detach it.
+  if(_servo.attached())
+        _servo.detach();
+
 }
 
 /*************************************/
