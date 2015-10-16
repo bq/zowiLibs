@@ -110,14 +110,14 @@ void setup() {
   enableInterrupt(PIN_ThirdButton, thirdButtonPushed, RISING);
 
   //Setup callbacks for SerialCommand commands 
-  SCmd.addCommand("S", receiveStop);      //  sendAck();
-  SCmd.addCommand("L", receiveLED);       //  sendAck();
-  SCmd.addCommand("T", recieveBuzzer);    //  sendAck();
-  SCmd.addCommand("M", receiveMovement);  //  sendAck();
-  SCmd.addCommand("H", receiveGesture);   //  sendAck();
-  SCmd.addCommand("C", receiveTrims);     //  sendAck();
-  SCmd.addCommand("G", receiveServo);     //  sendAck();
-  SCmd.addCommand("R", receiveName);      //  sendAck();
+  SCmd.addCommand("S", receiveStop);      //  sendAck & sendFinalAck
+  SCmd.addCommand("L", receiveLED);       //  sendAck & sendFinalAck
+  SCmd.addCommand("T", recieveBuzzer);    //  sendAck & sendFinalAck
+  SCmd.addCommand("M", receiveMovement);  //  sendAck & sendFinalAck
+  SCmd.addCommand("H", receiveGesture);   //  sendAck & sendFinalAck
+  SCmd.addCommand("C", receiveTrims);     //  sendAck & sendFinalAck
+  SCmd.addCommand("G", receiveServo);     //  sendAck & sendFinalAck
+  SCmd.addCommand("R", receiveName);      //  sendAck & sendFinalAck
   SCmd.addCommand("E", requestName);
   SCmd.addCommand("D", requestDistance);
   SCmd.addCommand("N", requestNoise);
@@ -299,8 +299,7 @@ void loop() {
       case 2:
 
         //ACTUALIZO OBST Var
-        obstacleDetector();
-        //Serial.println("Mido primera:");
+        //obstacleDetector();
 
         if(obstacleDetected){
 
@@ -321,18 +320,14 @@ void loop() {
               zowi.walk(1,1300,-1);
             }
 
-            //delay(1000);
-            //zowi.home();
+ 
             delay(100);
-
 
             //ACTUALIZO OBST Var
             obstacleDetector();
 
             delay(100);
-            //Serial.println("Mido durante:");    
-            //Serial.println(obstacleDetected);
-            //delay(100);
+ 
 
 
 
@@ -340,41 +335,19 @@ void loop() {
            if((obstacleDetected==true)||(buttonPushed==true)){break;}            
            else{
               zowi.putMouth(smile);
-              //zowi.sing(S_happy_short); 
               delay(50);
               obstacleDetector();
            } 
             
            
-            //Si no hay OBSt o no he pulsado Boton giro IZQ
-           if((obstacleDetected==true)||(buttonPushed==true)){break;}            
-            else{ 
-              zowi.turn(1,1000,1); 
-              delay(50);
-              obstacleDetector();
-              //delay(50);
-              
-            } 
-
-             
            //Si no hay OBSt o no he pulsado Boton giro IZQ
-           if((obstacleDetected==true)||(buttonPushed==true)){break;}            
-            else{ 
-              zowi.turn(1,1000,1); 
-              delay(50);
-              obstacleDetector();
-              //delay(50);
-            }
-
-            //Si no hay OBSt o no he pulsado Boton giro IZQ
-           if((obstacleDetected==true)||(buttonPushed==true)){break;}            
-            else{ 
-              zowi.turn(1,1000,1); 
-              delay(50);
-              obstacleDetector();
-              //delay(50);
-            }
-
+           for(int i=0; i<3; i++){
+              if((obstacleDetected==true)||(buttonPushed==true)){break;}            
+              else{ 
+                  zowi.turn(1,1000,1); 
+                  obstacleDetector();
+              } 
+           }
             
             //Si no hay OBSt o no he pulsado Boton PONGO FELIZ
             if((obstacleDetected==true)||(buttonPushed==true)){break;}           
@@ -387,7 +360,9 @@ void loop() {
         
 
         }else{
+
             zowi.walk(1,1000,1); //Zowi walk straight
+            obstacleDetector();
         }   
 
         break;
@@ -487,15 +462,19 @@ void obstacleDetector(){
 void receiveStop(){
 
     sendAck();
-
     endmove=1;
     zowi.home();
+
+    sendFinalAck();
 }
 
 //Function to receive LED commands
 void receiveLED(){  
 
-    receiveStop(); //stop and sendAck
+    //stop and sendAck
+    sendAck();
+    endmove=1;
+    zowi.home(); 
 
     //Examples of receiveLED Bluetooth commands
     //L 00000000100001010010001100000000
@@ -513,12 +492,17 @@ void receiveLED(){
       delay(2000);
       zowi.clearMouth();
     }
+
+    sendFinalAck();
 }
 
 //Function to receive buzzer commands
 void recieveBuzzer(){
   
-    receiveStop(); //stop and sendAck
+    //stop and sendAck
+    sendAck();
+    endmove=1;
+    zowi.home(); 
 
     bool error = false; 
     int frec;
@@ -543,6 +527,8 @@ void recieveBuzzer(){
 
       zowi._tone(frec, duration, 1);   
     }
+
+    sendFinalAck();
 }
 
 //Function to receive TRims commands
@@ -584,6 +570,8 @@ void receiveTrims(){
       zowi.setTrims(trim_YL, trim_YR, trim_RL, trim_RR);
       zowi.saveTrimsOnEEPROM(); //Uncomment this only for one upload when you finaly set the trims.
     } 
+
+    sendFinalAck();
 }
 
 //Function to receive Servo commands
@@ -626,7 +614,9 @@ void receiveServo(){
       int servoPos[4]={servo_YL, servo_YR, servo_RL, servo_RR}; 
       zowi.moveServos(200, servoPos);   //Move 200ms
       
-    } 
+    }
+
+    sendFinalAck(); 
 }
 
 //Function to receive movement commands
@@ -661,7 +651,9 @@ void receiveMovement(){
     {
       moveSize =30;
     }
-      endmove=0;
+      
+    endmove=0;
+  
 }
 
 
@@ -733,13 +725,18 @@ void move(int moveId){
       default:
         break;
     }
-    
+
+  sendFinalAck();  
+
 }
 
 
 void receiveGesture(){
 
+    //stop and sendAck
     sendAck();
+    endmove=1;
+    zowi.home();
 
     //Definition of Movement Bluetooth commands
     //M  MoveID  T   MoveSize  
@@ -798,11 +795,16 @@ void receiveGesture(){
         break;
     }
 
+    sendFinalAck();
+
 }
 
 void receiveName(){
 
-    receiveStop(); //stop and sendAck
+    //stop and sendAck
+    sendAck();
+    endmove=1;
+    zowi.home();
 
     char newZowiName[11] = "";  //Variable to store data read from Serial.
     int eeAddress = 5;          //Location we want the data to be in EEPROM.
@@ -825,7 +827,9 @@ void receiveName(){
       zowi.putMouth(xMouth);
       delay(2000);
       zowi.clearMouth();
-    } 
+    }
+
+    sendFinalAck(); 
 }
 
 
@@ -895,6 +899,13 @@ void sendAck()
     Serial.flush();
 }
 
+void sendFinalAck()
+{
+    Serial.print(F("&&"));
+    Serial.print(F("F"));
+    Serial.println(F("%%"));
+    Serial.flush();
+}
 
 
 //-- Functions with animatics
