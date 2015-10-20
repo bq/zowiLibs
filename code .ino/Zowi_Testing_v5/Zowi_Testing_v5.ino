@@ -2,7 +2,7 @@
 //----------------------------------------------------------------
 //-- Zowi: Testing the complete pack
 //-- (c) BQ. Released under a GPL licencse
-//-- October 2015
+//-- 20 October 2015
 //-- Authors:  Anita de Prado: ana.deprado@bq.com
 //--           Jose Alberca:   jose.alberca@bq.com
 //--           Javier Isabel:  javier.isabel@bq.com
@@ -64,10 +64,10 @@ const char name_fac='$'; //Factory name
 const char name_fir='#'; //First name
 
 //-- Movement parameters
-int T=1000;       //Initial duration of movement
-int moveId=0;     //Number of movement
-int endmove=1;    // 1= stop 0= moving
-int moveSize=15;  //Many movements accept a moveSize parameter asociated with the height of that movement
+int T=1000;               //Initial duration of movement
+int moveId=0;             //Number of movement
+bool isZowiResting=true;  //1=stopped, 0=moving
+int moveSize=15;          //Many movements accept a moveSize parameter asociated with the height of that movement
 
 volatile int state=0; //State of zowi state machine
 volatile bool buttonPushed=false;  //Variable to remember when a button has been pushed
@@ -192,18 +192,17 @@ void setup() {
     if(!buttonPushed){ 
         zowi.putMouth(smallSurprise);
         zowi.swing(2,800,20);  
+        zowi.home();
     }  
   }
 
 
   //Zowi's resting position
   if(!buttonPushed){ 
-    zowi.home();
     zowi.putMouth(happyOpen);
   }
 
   previousMillis = millis();
-  
 
 }
 
@@ -293,13 +292,8 @@ void loop() {
 
 
 
-
-
       //MODE 2 - Obstacle detector mode
       case 2:
-
-        //ACTUALIZO OBST Var
-        //obstacleDetector();
 
         if(obstacleDetected){
 
@@ -320,18 +314,12 @@ void loop() {
               zowi.walk(1,1300,-1);
             }
 
- 
             delay(100);
-
-            //ACTUALIZO OBST Var
             obstacleDetector();
-
             delay(100);
- 
 
 
-
-            //Si no hay OBSt o no he pulsado Boton giro IZQ
+           //If there are no obstacles and no button is pressed, Zowi shows a smile
            if((obstacleDetected==true)||(buttonPushed==true)){break;}            
            else{
               zowi.putMouth(smile);
@@ -340,7 +328,7 @@ void loop() {
            } 
             
            
-           //Si no hay OBSt o no he pulsado Boton giro IZQ
+           //If there are no obstacles and no button is pressed, Zowi shows turns left
            for(int i=0; i<3; i++){
               if((obstacleDetected==true)||(buttonPushed==true)){break;}            
               else{ 
@@ -349,7 +337,7 @@ void loop() {
               } 
            }
             
-            //Si no hay OBSt o no he pulsado Boton PONGO FELIZ
+            //If there are no obstacles and no button is pressed, Zowi is happy
             if((obstacleDetected==true)||(buttonPushed==true)){break;}           
             else{
                 zowi.home();
@@ -384,7 +372,7 @@ void loop() {
             zowi.putMouth(random(10,21));
             move(random(1,20));
             zowi.home();
-            delay(200); //Wait for possible noise of the servos while get home
+            delay(500); //Wait for possible noise of the servos while get home
           }
           
           if(!buttonPushed){zowi.putMouth(happyOpen);}
@@ -397,7 +385,7 @@ void loop() {
 
         SCmd.readSerial();
 
-        if (endmove==0){
+        if (isZowiResting==false){
           move(moveId);
         }
       
@@ -406,7 +394,6 @@ void loop() {
       default:
           state=4;
           break;
-        
     }
 
   } 
@@ -456,15 +443,20 @@ void obstacleDetector(){
 
 }
 
+void goToRest(){
+    if (isZowiResting==false){
+        zowi.home();
+        isZowiResting=true;
+    }
+}
+
 
 
 //Function to receive stop commands. 'stop' is a reserved word.
 void receiveStop(){
 
     sendAck();
-    endmove=1;
-    zowi.home();
-
+    goToRest();
     sendFinalAck();
 }
 
@@ -473,8 +465,7 @@ void receiveLED(){
 
     //stop and sendAck
     sendAck();
-    endmove=1;
-    zowi.home(); 
+    goToRest();
 
     //Examples of receiveLED Bluetooth commands
     //L 00000000100001010010001100000000
@@ -501,8 +492,7 @@ void recieveBuzzer(){
   
     //stop and sendAck
     sendAck();
-    endmove=1;
-    zowi.home(); 
+    goToRest(); 
 
     bool error = false; 
     int frec;
@@ -534,7 +524,9 @@ void recieveBuzzer(){
 //Function to receive TRims commands
 void receiveTrims(){  
 
+    //stop and sendAck
     sendAck();
+    goToRest(); 
 
     int trim_YL,trim_YR,trim_RL,trim_RR;
 
@@ -577,7 +569,9 @@ void receiveTrims(){
 //Function to receive Servo commands
 void receiveServo(){  
 
+    //stop and sendAck
     sendAck();
+    goToRest();
 
     //Definition of Servo Bluetooth command
     //G  servo_YL servo_YR servo_RL servo_RR 
@@ -623,6 +617,7 @@ void receiveServo(){
 void receiveMovement(){
 
     sendAck();
+    isZowiResting=false;
 
     //Definition of Movement Bluetooth commands
     //M  MoveID  T   MoveSize  
@@ -651,8 +646,6 @@ void receiveMovement(){
     {
       moveSize =30;
     }
-      
-    endmove=0;
   
 }
 
@@ -733,10 +726,9 @@ void move(int moveId){
 
 void receiveGesture(){
 
-    //stop and sendAck
+    //sendAck & stop if necessary
     sendAck();
-    endmove=1;
-    zowi.home();
+    goToRest(); 
 
     //Definition of Movement Bluetooth commands
     //M  MoveID  T   MoveSize  
@@ -801,10 +793,9 @@ void receiveGesture(){
 
 void receiveName(){
 
-    //stop and sendAck
+    //sendAck & stop if necessary
     sendAck();
-    endmove=1;
-    zowi.home();
+    goToRest(); 
 
     char newZowiName[11] = "";  //Variable to store data read from Serial.
     int eeAddress = 5;          //Location we want the data to be in EEPROM.
@@ -835,6 +826,8 @@ void receiveName(){
 
 void requestName(){
 
+    goToRest(); //stop if necessary
+
     char actualZowiName[11]= "";  //Variable to store data read from EEPROM.
     int eeAddress = 5;            //EEPROM address to start reading from
 
@@ -852,6 +845,8 @@ void requestName(){
 
 void requestDistance()
 {
+    goToRest();  //stop if necessary  
+
     int distance = zowi.getDistance();
     Serial.print(F("&&"));
     Serial.print(F("D "));
@@ -862,6 +857,8 @@ void requestDistance()
 
 void requestNoise()
 {
+    goToRest();  //stop if necessary
+
     int microphone= zowi.getNoise(); //analogRead(PIN_NoiseSensor);
     Serial.print(F("&&"));
     Serial.print(F("N "));
@@ -872,6 +869,8 @@ void requestNoise()
 
 void requestBattery()
 {
+    goToRest();  //stop if necessary
+
     //The first read of the batery is often a wrong reading, so we will discard this value. 
     double batteryLevel = zowi.getBatteryLevel();
 
@@ -884,6 +883,8 @@ void requestBattery()
 
 void requestProgramId()
 {
+    goToRest();   //stop if necessary
+
     Serial.print(F("&&"));
     Serial.print(F("I "));
     Serial.print(programID);
@@ -933,10 +934,10 @@ void ZowiLowBatteryAlarm(){
 
 void ZowiSleeping_withInterrupts(){
 
-  int bedPos_0[4]={100, 80, 40, 140};
+  int bedPos_0[4]={100, 80, 60, 120}; //{100, 80, 40, 140}
 
   if(!buttonPushed){
-    zowi.moveServos(800, bedPos_0);     
+    zowi.moveServos(700, bedPos_0);  //800  
   }
 
   for(int i=0; i<4;i++){

@@ -819,16 +819,20 @@ void Zowi::sing(int songName){
 
 void Zowi::playGesture(int gesture){
 
-  int sadPos[4]={110, 70, 20, 160};
-  int bedPos[4]={100, 80, 40, 140};
-  int fartPos_1[4]={90, 90, 145, 122}; //rightBend
-  int fartPos_2[4]={90, 90, 80, 122};
-  int fartPos_3[4]={90, 90, 145, 80};
-  int confusedPos[4]={110, 70, 90, 90};
-  int angryPos[4]={90, 90, 70, 110};
-  int headLeft[4]={110, 110, 90, 90};
-  int headRight[4]={70, 70, 90, 90};
-  int fretfulPos[4]={90, 90, 90, 110};
+  int sadPos[4]=      {110, 70, 20, 160};
+  int bedPos[4]=      {100, 80, 60, 120};
+  int fartPos_1[4]=   {90, 90, 145, 122}; //rightBend
+  int fartPos_2[4]=   {90, 90, 80, 122};
+  int fartPos_3[4]=   {90, 90, 145, 80};
+  int confusedPos[4]= {110, 70, 90, 90};
+  int angryPos[4]=    {90, 90, 70, 110};
+  int headLeft[4]=    {110, 110, 90, 90};
+  int headRight[4]=   {70, 70, 90, 90};
+  int fretfulPos[4]=  {90, 90, 90, 110};
+  int bendPos_1[4]=   {90, 90, 70, 35};
+  int bendPos_2[4]=   {90, 90, 55, 35};
+  int bendPos_3[4]=   {90, 90, 42, 35};
+  int bendPos_4[4]=   {90, 90, 34, 35};
   
 
   switch(gesture){
@@ -883,7 +887,7 @@ void Zowi::playGesture(int gesture){
 
     case ZowiSleeping:
 
-        Zowi::moveServos(800, bedPos);     
+        Zowi::moveServos(700, bedPos);     
 
         for(int i=0; i<4;i++){
           Zowi::putAnimationMouth(dreamMouth,0);
@@ -1069,6 +1073,20 @@ void Zowi::playGesture(int gesture){
     break;
 
     case ZowiFail:
+
+        Zowi::putMouth(sadOpen);
+        Zowi::moveServos(300,bendPos_1);
+        Zowi::_tone(900,200,0);
+        Zowi::putMouth(sadClosed);
+        Zowi::moveServos(300,bendPos_2);
+        Zowi::_tone(600,200,0);
+        Zowi::putMouth(confused);
+        Zowi::moveServos(300,bendPos_3);
+        Zowi::_tone(300,200,0);
+        Zowi::moveServos(300,bendPos_4);
+        Zowi::putMouth(xMouth);
+        Zowi::detachServos();
+        Zowi::_tone(150,2200,0);
         
         Zowi::clearMouth();
         Zowi::putMouth(happyOpen);
