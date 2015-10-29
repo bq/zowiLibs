@@ -2,7 +2,7 @@
 //----------------------------------------------------------------
 //-- Zowi: Testing the complete pack
 //-- (c) BQ. Released under a GPL licencse
-//-- 20 October 2015
+//-- 29 October 2015
 //-- Authors:  Anita de Prado: ana.deprado@bq.com
 //--           Jose Alberca:   jose.alberca@bq.com
 //--           Javier Isabel:  javier.isabel@bq.com
@@ -127,6 +127,7 @@ void setup() {
   SCmd.addCommand("T", recieveBuzzer);    //  sendAck & sendFinalAck
   SCmd.addCommand("M", receiveMovement);  //  sendAck & sendFinalAck
   SCmd.addCommand("H", receiveGesture);   //  sendAck & sendFinalAck
+  SCmd.addCommand("K", receiveSing);      //  sendAck & sendFinalAck
   SCmd.addCommand("C", receiveTrims);     //  sendAck & sendFinalAck
   SCmd.addCommand("G", receiveServo);     //  sendAck & sendFinalAck
   SCmd.addCommand("R", receiveName);      //  sendAck & sendFinalAck
@@ -236,6 +237,8 @@ void loop() {
     //Disable Pin Interruptions
     disableInterrupt(PIN_SecondButton);
     disableInterrupt(PIN_ThirdButton);
+
+    buttonPushed=false;
   }
 
 
@@ -469,6 +472,7 @@ void receiveStop(){
     sendAck();
     zowi.home();
     sendFinalAck();
+
 }
 
 
@@ -480,8 +484,8 @@ void receiveLED(){
     zowi.home();
 
     //Examples of receiveLED Bluetooth commands
-    //L 00000000100001010010001100000000
-    //L 00111111111111111111111111111111 (todos los LED encendidos)
+    //L 000000001000010100100011000000000
+    //L 001111111111111111111111111111111 (todos los LED encendidos)
     unsigned long int matrix;
     char *arg;
     char *endstr;
@@ -489,14 +493,15 @@ void receiveLED(){
     //Serial.println (arg);
     if (arg != NULL) {
       matrix=strtoul(arg,&endstr,2);    // Converts a char string to unsigned long integer
-      zowi.putMouth(matrix);
-    }else {
+      zowi.putMouth(matrix,false);
+    }else{
       zowi.putMouth(xMouth);
       delay(2000);
       zowi.clearMouth();
     }
 
     sendFinalAck();
+
 }
 
 
@@ -532,6 +537,7 @@ void recieveBuzzer(){
     }
 
     sendFinalAck();
+
 }
 
 
@@ -578,15 +584,14 @@ void receiveTrims(){
     } 
 
     sendFinalAck();
+
 }
 
 
 //-- Function to receive Servo commands
 void receiveServo(){  
 
-    //sendAck
-    sendAck();
-    //zowi.home(); 
+    sendAck(); 
 
     //Definition of Servo Bluetooth command
     //G  servo_YL servo_YR servo_RL servo_RR 
@@ -625,7 +630,8 @@ void receiveServo(){
       
     }
 
-    sendFinalAck(); 
+    sendFinalAck();
+
 }
 
 
@@ -640,26 +646,22 @@ void receiveMovement(){
     char *arg; 
     arg = SCmd.next(); 
     if (arg != NULL) {moveId=atoi(arg);}
-    else 
-    {
+    else{
       zowi.putMouth(xMouth);
       delay(2000);
       zowi.clearMouth();
-      moveId=0;
+      moveId=0; //stop
     }
+    
     arg = SCmd.next(); 
     if (arg != NULL) {T=atoi(arg);}
-    else 
-    {
-      zowi.putMouth(xMouth);
-      delay(2000);
-      zowi.clearMouth();
+    else{
       T=1000;
     }
+
     arg = SCmd.next(); 
     if (arg != NULL) {moveSize=atoi(arg);}
-    else 
-    {
+    else{
       moveSize =15;
     } 
 }
@@ -668,7 +670,12 @@ void receiveMovement(){
 //-- Function to execute the right movement according the movement command received.
 void move(int moveId){
 
+  bool manualMode = false;
+
   switch (moveId) {
+    case 0:
+      zowi.home();
+      break;
     case 1: //M 1 1000 
       zowi.walk(1,T,1);
       break;
@@ -730,10 +737,14 @@ void move(int moveId){
       zowi.ascendingTurn(1,T,moveSize);
       break;
     default:
+        manualMode = true;
       break;
   }
 
-  sendFinalAck();   
+  if(!manualMode){
+    sendFinalAck();
+  }
+       
 }
 
 
@@ -744,8 +755,8 @@ void receiveGesture(){
     sendAck();
     zowi.home(); 
 
-    //Definition of Movement Bluetooth commands
-    //M  MoveID  T   MoveSize  
+    //Definition of Gesture Bluetooth commands
+    //H  GestureID  
     int gesture = 0;
     char *arg; 
     arg = SCmd.next(); 
@@ -804,6 +815,91 @@ void receiveGesture(){
     sendFinalAck();
 }
 
+//-- Function to receive sing commands
+void receiveSing(){
+
+    //sendAck & stop if necessary
+    sendAck();
+    zowi.home(); 
+
+    //Definition of Sing Bluetooth commands
+    //K  SingID    
+    int sing = 0;
+    char *arg; 
+    arg = SCmd.next(); 
+    if (arg != NULL) {sing=atoi(arg);}
+    else 
+    {
+      zowi.putMouth(xMouth);
+      delay(2000);
+      zowi.clearMouth();
+    }
+
+    switch (sing) {
+      case 1: //K 1 
+        zowi.sing(S_connection);
+        break;
+      case 2: //K 2 
+        zowi.sing(S_disconnection);
+        break;
+      case 3: //K 3 
+        zowi.sing(S_surprise);
+        break;
+      case 4: //K 4 
+        zowi.sing(S_OhOoh);
+        break;
+      case 5: //K 5  
+        zowi.sing(S_OhOoh2);
+        break;
+      case 6: //K 6 
+        zowi.sing(S_cuddly);
+        break;
+      case 7: //K 7 
+        zowi.sing(S_sleeping);
+        break;
+      case 8: //K 8 
+        zowi.sing(S_happy);
+        break;
+      case 9: //K 9  
+        zowi.sing(S_superHappy);
+        break;
+      case 10: //K 10
+        zowi.sing(S_happy_short);
+        break;  
+      case 11: //K 11
+        zowi.sing(S_sad);
+        break;   
+      case 12: //K 12
+        zowi.sing(S_confused);
+        break; 
+      case 13: //K 13
+        zowi.sing(S_fart1);
+        break;
+      case 14: //K 14
+        zowi.sing(S_fart2);
+        break;
+      case 15: //K 15
+        zowi.sing(S_fart3);
+        break;    
+      case 16: //K 16
+        zowi.sing(S_mode1);
+        break; 
+      case 17: //K 17
+        zowi.sing(S_mode2);
+        break; 
+      case 18: //K 18
+        zowi.sing(S_mode3);
+        break;   
+      case 19: //K 19
+        zowi.sing(S_buttonPushed);
+        break;                      
+      default:
+        break;
+    }
+
+    sendFinalAck();
+}
+
 
 //-- Function to receive Name command
 void receiveName(){
@@ -835,7 +931,8 @@ void receiveName(){
       zowi.clearMouth();
     }
 
-    sendFinalAck(); 
+    sendFinalAck();
+
 }
 
 
@@ -917,6 +1014,8 @@ void requestProgramId(){
 
 //-- Function to send Ack comand (A)
 void sendAck(){
+
+  delay(50);
 
   Serial.print(F("&&"));
   Serial.print(F("A"));
