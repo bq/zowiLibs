@@ -84,7 +84,9 @@ void Zowi::saveTrimsOnEEPROM() {
 void Zowi::_moveServos(int time, int  servo_target[]) {
 
   attachServos();
-  isZowiResting=false;
+  if(getRestState()==true){
+        setRestState(false);
+  }
 
   if(time>10){
     for (int i = 0; i < 4; i++) increment[i] = ((servo_target[i]) - servo_position[i]) / (time / 10.0);
@@ -123,7 +125,10 @@ void Zowi::oscillateServos(int A[4], int O[4], int T, double phase_diff[4], floa
 void Zowi::_execute(int A[4], int O[4], int T, double phase_diff[4], float steps = 1.0){
 
   attachServos();
-  isZowiResting=false;
+  if(getRestState()==true){
+        setRestState(false);
+  }
+
 
   int cycles=(int)steps;    
 
@@ -1087,6 +1092,7 @@ void Zowi::playGesture(int gesture){
 
     case ZowiVictory:
         
+        putMouth(smallSurprise);
         //final pos   = {90,90,150,30}
         for (int i = 0; i < 60; ++i){
           int pos[]={90,90,90+i,90-i};  
@@ -1094,6 +1100,7 @@ void Zowi::playGesture(int gesture){
           _tone(1600+i*20,15,1);
         }
 
+        putMouth(bigSurprise);
         //final pos   = {90,90,90,90}
         for (int i = 0; i < 60; ++i){
           int pos[]={90,90,150-i,30+i};  
@@ -1101,9 +1108,7 @@ void Zowi::playGesture(int gesture){
           _tone(2800+i*20,15,1);
         }
 
-        //Tin tirorariiii
-
-
+        putMouth(happyOpen);
         //SUPER HAPPY
         //-----
         tiptoeSwing(1,500,20);

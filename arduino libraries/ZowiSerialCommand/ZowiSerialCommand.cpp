@@ -53,8 +53,9 @@ char *ZowiSerialCommand::next()
 // buffer for a prefix command, and calls handlers setup by addCommand() member
 void ZowiSerialCommand::readSerial() 
 {
+	bool onlyOneCommand = true;
 	// If we're using the Hardware port, check it.   Otherwise check the user-created ZowiSoftwareSerial Port
-	while (Serial.available() > 0)
+	while ((Serial.available() > 0)&&(onlyOneCommand==true))
 	{
 		int i; 
 		boolean matched; 
@@ -62,6 +63,8 @@ void ZowiSerialCommand::readSerial()
 			inChar=Serial.read();   // Read single available character, there may be more waiting
 		
 		if (inChar==term) {     // Check for the terminator (default '\r') meaning end of command
+
+			onlyOneCommand=false; //
 			
 			bufPos=0;           // Reset to start of buffer
 			token = strtok_r(buffer,delim,&last);   // Search for command at start of buffer

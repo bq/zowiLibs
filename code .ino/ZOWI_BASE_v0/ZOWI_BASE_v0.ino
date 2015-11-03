@@ -1,8 +1,8 @@
 
 //----------------------------------------------------------------
-//-- Zowi: Testing the complete pack
+//-- Zowi basic firmware
 //-- (c) BQ. Released under a GPL licencse
-//-- 29 October 2015
+//-- 03 November 2015
 //-- Authors:  Anita de Prado: ana.deprado@bq.com
 //--           Jose Alberca:   jose.alberca@bq.com
 //--           Javier Isabel:  javier.isabel@bq.com
