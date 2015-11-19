@@ -1,8 +1,8 @@
 
 //----------------------------------------------------------------
-//-- Zowi: Testing the complete pack
+//-- Zowi basic firmware
 //-- (c) BQ. Released under a GPL licencse
-//-- 29 October 2015
+//-- 03 November 2015
 //-- Authors:  Anita de Prado: ana.deprado@bq.com
 //--           Jose Alberca:   jose.alberca@bq.com
 //--           Javier Isabel:  javier.isabel@bq.com
@@ -61,7 +61,7 @@ Zowi zowi;  //This is Zowi!!
 //-- Global Variables -------------------------------------------//
 ///////////////////////////////////////////////////////////////////
 
-const char programID[]="ZOWI_BASE_v0"; //Each program will have a ID
+const char programID[]="ZOWI_BASE_v1"; //Each program will have a ID
 
 const char name_fac='$'; //Factory name
 const char name_fir='#'; //First name
@@ -98,6 +98,22 @@ bool obstacleDetected = false;
 //-- Setup ------------------------------------------------------//
 ///////////////////////////////////////////////////////////////////
 void setup(){
+
+
+  //Ckeck firmware version
+  if (EEPROM.read(42)==255){ //If so, Zowi had recorded version ZOWI_BASE_v0
+
+    EEPROM.put(42, 1); //From now, the version number (1) is written here
+    
+    //Move trims on EEPROM:
+    for (int i = 0; i < 4; i++) {
+      int servo_trim = EEPROM.read(i);
+      EEPROM.write(i+100, servo_trim);
+      EEPROM.write(i+200, servo_trim);
+      EEPROM.write(i+300, servo_trim);
+    }
+
+  }
 
   //Serial communication initialization
   Serial.begin(115200);  
