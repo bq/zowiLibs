@@ -25,22 +25,7 @@ void Zowi::init(int YL, int YR, int RL, int RR, bool load_calibration, int Noise
 
   if (load_calibration) {
     for (int i = 0; i < 4; i++) {
-
-      int trim1 = EEPROM.read(i+100);   //New positions v1  +100
-      int trim2 = EEPROM.read(i+200); 
-      int trim3 = EEPROM.read(i+300); 
-      int servo_trim = 0; 
-
-      if((trim1==trim2)&&(trim1==trim3)){
-          servo_trim = trim1;
-      }else if(trim1==trim2){
-          servo_trim = trim1;    
-      }else if(trim2==trim3){
-          servo_trim = trim2;
-      }else{
-          servo_trim = trim3;
-      }
-      
+      int servo_trim = EEPROM.read(i);
       if (servo_trim > 128) servo_trim -= 256;
       servo[i].SetTrim(servo_trim);
     }
@@ -88,10 +73,8 @@ void Zowi::setTrims(int YL, int YR, int RL, int RR) {
 
 void Zowi::saveTrimsOnEEPROM() {
   
-  for (int i = 0; i < 4; i++){
-    EEPROM.write(i+100, servo[i].getTrim());
-    EEPROM.write(i+200, servo[i].getTrim());
-    EEPROM.write(i+300, servo[i].getTrim());
+  for (int i = 0; i < 4; i++){ 
+      EEPROM.write(i, servo[i].getTrim());
   } 
       
 }
@@ -554,11 +537,13 @@ int Zowi::getNoise(){
 
   int noiseLevel = 0;
   int noiseReadings = 0;
-  int numReadings = 2;
+  int numReadings = 2;  
+
+    noiseLevel = analogRead(pinNoiseSensor);
 
     for(int i=0; i<numReadings; i++){
         noiseReadings += analogRead(pinNoiseSensor);
-        delay(2); // delay in between reads for stability
+        delay(4); // delay in between reads for stability
     }
 
     noiseLevel = noiseReadings / numReadings;

@@ -29,7 +29,7 @@ ZowiSerialCommand SCmd;  //The SerialCommand object
 //-- Zowi Library
 #include <Zowi.h>
 Zowi zowi;  //This is Zowi!!
-
+ 
 //---------------------------------------------------------
 //-- Configuration of pins where the servos are attached
 /*
