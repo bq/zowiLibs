@@ -257,28 +257,34 @@ void Zowi::turn(float steps, int T, int dir){
 void Zowi::bend (int steps, int T, int dir){
 
   //Parameters of all the movements. Default: Left bend
-  int bend1[4]={90, 90, 58, 35};
-  int bend2[4]={90, 90, 58, 105};
+  int bend1[4]={90, 90, 62, 35}; 
+  int bend2[4]={90, 90, 62, 105};
   int homes[4]={90, 90, 90, 90};
+
   //Time of one bend, constrained in order to avoid movements too fast.
-  T=max(T, 600);
+  //T=max(T, 600);
 
   //Changes in the parameters if right direction is chosen 
   if(dir==-1)
   {
     bend1[2]=180-35;
-    bend1[3]=180-58;
+    bend1[3]=180-60;  //Not 65. Zowi is unbalanced
     bend2[2]=180-105;
-    bend2[3]=180-58;
+    bend2[3]=180-60;
   }
+
+  //Time of the bend movement. Fixed parameter to avoid falls
+  int T2=800; 
+
   //Bend movement
   for (int i=0;i<steps;i++)
   {
-  _moveServos(T/4,bend1);
-  _moveServos(T/10,bend2);
-  delay(3*T/4);
-  _moveServos(500,homes);
+    _moveServos(T2/2,bend1);
+    _moveServos(T2/2,bend2);
+    delay(T*0.8);
+    _moveServos(500,homes);
   }
+
 }
 
 
@@ -301,7 +307,7 @@ void Zowi::shakeLeg (int steps,int T,int dir){
   int homes[4]={90, 90, 90, 90};
 
   //Changes in the parameters if left leg is chosen
-  if(dir==1)      
+  if(dir==-1)      
   {
     shake_leg1[2]=180-35;
     shake_leg1[3]=180-58;
@@ -331,6 +337,7 @@ void Zowi::shakeLeg (int steps,int T,int dir){
     }
     _moveServos(500,homes); //Return to home position
   }
+  
   delay(T);
 }
 

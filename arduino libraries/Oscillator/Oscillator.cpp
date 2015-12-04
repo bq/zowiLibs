@@ -112,9 +112,9 @@ void Oscillator::refresh()
       //-- If the oscillator is not stopped, calculate the servo position
       if (!_stop) {
         //-- Sample the sine function and set the servo pos
-        _pos = round(_A * sin(_phase + _phase0) + _O);
-	if (_rev) _pos=-_pos;
-        _servo.write(_pos+90+_trim);
+         _pos = round(_A * sin(_phase + _phase0) + _O);
+	       if (_rev) _pos=-_pos;
+         _servo.write(_pos+90+_trim);
       }
 
       //-- Increment the phase

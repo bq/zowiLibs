@@ -1,8 +1,8 @@
 
 //----------------------------------------------------------------
-//-- Zowi basic firmware
+//-- Zowi basic firmware v2
 //-- (c) BQ. Released under a GPL licencse
-//-- 03 November 2015
+//-- 04 December 2015
 //-- Authors:  Anita de Prado: ana.deprado@bq.com
 //--           Jose Alberca:   jose.alberca@bq.com
 //--           Javier Isabel:  javier.isabel@bq.com
@@ -12,7 +12,7 @@
 //-- Experiment with all the features that Zowi have!
 //-----------------------------------------------------------------
 
-#include <Servo.h>
+#include <Servo.h> 
 #include <Oscillator.h>
 #include <EEPROM.h>
 #include <BatReader.h>
@@ -61,7 +61,7 @@ Zowi zowi;  //This is Zowi!!
 //-- Global Variables -------------------------------------------//
 ///////////////////////////////////////////////////////////////////
 
-const char programID[]="ZOWI_BASE_v0"; //Each program will have a ID
+const char programID[]="ZOWI_BASE_v2"; //Each program will have a ID
 
 const char name_fac='$'; //Factory name
 const char name_fir='#'; //First name
