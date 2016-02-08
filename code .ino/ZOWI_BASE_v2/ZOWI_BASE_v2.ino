@@ -9,7 +9,7 @@
 //--           Juan Gonzalez (obijuan): juan.gonzalez@bq.com
 //--           Irene Sanz : irene.sanz@bq.com
 //-----------------------------------------------------------------
-//-- Experiment with all the features that Zowi have!
+//-- Experiment with all the features that Zowi has!
 //-----------------------------------------------------------------
 
 #include <Servo.h> 
@@ -78,9 +78,8 @@ int moveSize=15;         //Asociated with the height of some movements
 //--    * MODE = 2: Obstacle detector mode  
 //--    * MODE = 3: Noise detector mode   
 //--    * MODE = 4: ZowiPAD or any Teleoperation mode (listening SerialPort). 
-//--
+//---------------------------------------------------------
 volatile int MODE=0; //State of zowi in the principal state machine. 
-//--------------------------------------------------------- 
 
 volatile bool buttonPushed=false;  //Variable to remember when a button has been pushed
 volatile bool buttonAPushed=false; //Variable to remember when A button has been pushed
@@ -957,7 +956,7 @@ void requestName(){
 }
 
 
-//-- Function to send ultrasonic sensor measure (distance)
+//-- Function to send ultrasonic sensor measure (distance in "cm")
 void requestDistance(){
 
     zowi.home();  //stop if necessary  
@@ -1064,10 +1063,10 @@ void ZowiLowBatteryAlarm(){
 
 void ZowiSleeping_withInterrupts(){
 
-  int bedPos_0[4]={100, 80, 60, 120}; //{100, 80, 40, 140}
+  int bedPos_0[4]={100, 80, 60, 120}; 
 
   if(!buttonPushed){
-    zowi._moveServos(700, bedPos_0);  //800  
+    zowi._moveServos(700, bedPos_0);  
   }
 
   for(int i=0; i<4;i++){
@@ -1104,4 +1103,5 @@ void ZowiSleeping_withInterrupts(){
 
   zowi.home();
   if(!buttonPushed){zowi.putMouth(happyOpen);}  
+
 }
